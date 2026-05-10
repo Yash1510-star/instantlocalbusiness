@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Monitor,
@@ -504,10 +504,62 @@ function buildFallbackTemplate(slug: string): BusinessTemplate {
 
 // ─── Preview shell ────────────────────────────────────────────────────────────
 
+import type { GeneratedSite } from "@/lib/generate-site";
+
 export function SitePreview({ slug }: { slug: string }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [published, setPublished] = useState(false);
-  const template = TEMPLATES[slug] ?? buildFallbackTemplate(slug);
+  const [publishedUrl, setPublishedUrl] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [aiSite, setAiSite] = useState<GeneratedSite | null>(null);
+
+  // Static template fallback (for examples/demo pages)
+  const staticTemplate = TEMPLATES[slug] ?? buildFallbackTemplate(slug);
+
+  // Load AI-generated content from sessionStorage after hydration
+  useEffect(() => {
+    const stored = sessionStorage.getItem(`site_${slug}`);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as GeneratedSite;
+        setAiSite(parsed);
+        sessionStorage.removeItem(`site_${slug}`);
+      } catch {
+        // fall back to static template
+      }
+    }
+  }, [slug]);
+
+  // Display name for toolbar
+  const displayName = aiSite
+    ? slug.replace(/-\d{10,}$/, "").split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+    : staticTemplate.name;
+
+  const handlePublish = async () => {
+    if (!aiSite) return;
+    setPublishing(true);
+    try {
+      const res = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          site: aiSite,
+          businessName: displayName,
+          businessEmail: aiSite.email,
+          city: aiSite.address,
+          plan: "starter",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Publish failed");
+      setPublishedUrl(data.url);
+      setPublished(true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Publish failed. Please try again.");
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -520,10 +572,10 @@ export function SitePreview({ slug }: { slug: string }) {
             </Link>
             <span className="text-gray-600">/</span>
             <span className="text-sm text-gray-300 font-medium truncate max-w-[160px]">
-              {template.name}
+              {displayName}
             </span>
             <span className="text-xs bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
-              AI Generated
+              {aiSite ? "AI Generated" : "Demo"}
             </span>
           </div>
 
@@ -556,30 +608,45 @@ export function SitePreview({ slug }: { slug: string }) {
               <Share2 size={13} /> Share
             </button>
             {published ? (
-              <div className="flex items-center gap-1.5 text-xs text-green-400 font-semibold bg-green-500/20 border border-green-500/30 px-3 py-1.5 rounded-lg">
-                <Globe size={13} /> Published!
-              </div>
+              <a
+                href={publishedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-green-400 font-semibold bg-green-500/20 border border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-500/30 transition-colors"
+              >
+                <Globe size={13} /> View Live Site
+              </a>
             ) : (
               <button
-                onClick={() => setPublished(true)}
-                className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors"
+                onClick={handlePublish}
+                disabled={publishing || !aiSite}
+                className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
               >
-                <Globe size={13} /> Publish
+                {publishing ? (
+                  <><span className="animate-spin">⏳</span> Publishing...</>
+                ) : (
+                  <><Globe size={13} /> Publish</>
+                )}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {published && (
+      {published && publishedUrl && (
         <div className="bg-green-600 text-white text-center py-3 px-4">
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <CheckCircle2 size={18} />
             <span className="font-medium text-sm">
               Live at{" "}
-              <span className="font-bold underline">
-                {slug}.instantlocalbusiness.com
-              </span>
+              <a
+                href={publishedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold underline hover:text-green-100"
+              >
+                instantlocalbusiness.com{publishedUrl}
+              </a>
             </span>
             <Link
               href="/pricing"
@@ -597,7 +664,11 @@ export function SitePreview({ slug }: { slug: string }) {
           className="bg-white rounded-xl overflow-hidden transition-all duration-300"
           style={{ width: deviceWidths[device], maxWidth: "100%", minHeight: 600 }}
         >
-          <MockWebsite template={template} compact={device === "mobile"} />
+          {aiSite ? (
+            <AISiteRenderer site={aiSite} compact={device === "mobile"} />
+          ) : (
+            <MockWebsite template={staticTemplate} compact={device === "mobile"} />
+          )}
         </div>
       </div>
 
@@ -637,6 +708,197 @@ function unsplash(photoId: string, w: number, h: number) {
 }
 
 // ─── Per-business rendered website ───────────────────────────────────────────
+
+// ─── AI Site Renderer ─────────────────────────────────────────────────────────
+// Renders fully AI-generated sites with industry-specific layouts
+
+const ICON_MAP: Record<string, React.ReactNode> = {
+  wrench: <span className="text-lg">🔧</span>,
+  scissors: <span className="text-lg">✂️</span>,
+  scale: <span className="text-lg">⚖️</span>,
+  heart: <span className="text-lg">❤️</span>,
+  utensils: <span className="text-lg">🍽️</span>,
+  car: <span className="text-lg">🚗</span>,
+  leaf: <span className="text-lg">🌿</span>,
+  home: <span className="text-lg">🏠</span>,
+  star: <span className="text-lg">⭐</span>,
+  shield: <span className="text-lg">🛡️</span>,
+  clock: <span className="text-lg">⏰</span>,
+  phone: <span className="text-lg">📞</span>,
+};
+
+function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
+  const cs = site.colorScheme;
+  const isDark = cs.heroBg.includes("950") || cs.heroBg.includes("900") || cs.heroBg === "bg-black";
+
+  const textBase = isDark ? "text-white" : "text-gray-900";
+  const textMuted = isDark ? "text-gray-400" : "text-gray-500";
+  const sectionBg = isDark ? "bg-gray-900" : "bg-white";
+  const altBg = isDark ? "bg-gray-800" : "bg-gray-50";
+  const borderColor = isDark ? "border-gray-700" : "border-gray-100";
+
+  return (
+    <div className={`font-sans ${sectionBg} ${textBase}`}>
+
+      {/* ── Nav ── */}
+      <nav className={`flex items-center justify-between px-6 py-4 border-b ${borderColor} ${cs.navBg} backdrop-blur-sm`}>
+        <div>
+          <span className={`font-extrabold text-base ${textBase}`}>{site.heroHeadline.split(":")[0] || "Business"}</span>
+          <p className={`text-xs mt-0.5 ${textMuted}`}>{site.tagline}</p>
+        </div>
+        {!compact && (
+          <div className={`flex items-center gap-5 text-sm ${textMuted}`}>
+            {["About", "Services", "Contact"].map((l) => (
+              <span key={l} className="cursor-pointer hover:opacity-70 transition-opacity">{l}</span>
+            ))}
+          </div>
+        )}
+        <button className={`text-xs font-semibold px-4 py-2 rounded-lg ${cs.primary} ${cs.primaryHover} ${cs.primaryText} transition-colors`}>
+          {compact ? "Call Now" : site.primaryCta}
+        </button>
+      </nav>
+
+      {/* ── Hero ── */}
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={unsplash(site.heroPhoto, 1200, 600)}
+          alt="hero"
+          className="w-full object-cover"
+          style={{ height: compact ? 280 : 460 }}
+        />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <div className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4 ${cs.badge} backdrop-blur-sm`}>
+            {site.heroBadge}
+          </div>
+          <h1 className="text-2xl font-extrabold text-white leading-tight mb-3 drop-shadow-md max-w-2xl">
+            {site.heroHeadline}
+          </h1>
+          <p className="text-sm text-white/85 max-w-lg leading-relaxed mb-6 drop-shadow-sm">
+            {site.heroSubheadline}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button className={`font-semibold px-6 py-3 rounded-xl text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover} transition-colors`}>
+              {site.primaryCta}
+            </button>
+            <button className="font-semibold px-6 py-3 rounded-xl text-sm border border-white/50 text-white hover:bg-white/10 transition-colors">
+              {site.secondaryCta}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Trust strip ── */}
+      {site.trustPoints?.length > 0 && (
+        <div className={`${cs.primary} ${cs.primaryText} py-3 px-6`}>
+          <div className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs font-semibold`}>
+            {site.trustPoints.map((p) => (
+              <span key={p} className="flex items-center gap-1.5">
+                <CheckCircle2 size={12} /> {p}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Stats ── */}
+      <div className={`grid grid-cols-3 divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
+        {site.stats.map((s) => (
+          <div key={s.label} className="px-4 py-5 text-center">
+            <div className={`text-xl font-extrabold ${cs.accent}`}>{s.value}</div>
+            <div className={`text-xs mt-0.5 ${textMuted}`}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Services ── */}
+      <div className={`px-6 py-14 ${sectionBg}`}>
+        <h2 className={`text-xl font-bold text-center mb-2 ${textBase}`}>Our Services</h2>
+        <p className={`text-sm text-center mb-8 ${textMuted}`}>{site.aboutTitle}</p>
+        <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+          {site.services.map((s, i) => (
+            <div key={s.title} className={`rounded-xl overflow-hidden border ${borderColor}`}>
+              <div className="relative h-32 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 400, 200)}
+                  alt={s.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20" />
+                {s.icon && (
+                  <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1">
+                    {ICON_MAP[s.icon] ?? null}
+                  </div>
+                )}
+              </div>
+              <div className={`p-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                <h3 className={`font-semibold text-sm mb-1 ${textBase}`}>{s.title}</h3>
+                <p className={`text-xs leading-relaxed ${textMuted}`}>{s.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── About ── */}
+      <div className={`px-8 py-12 ${altBg} text-center`}>
+        <h2 className={`text-lg font-bold mb-3 ${textBase}`}>{site.aboutTitle}</h2>
+        <p className={`text-sm leading-relaxed max-w-2xl mx-auto ${textMuted}`}>{site.aboutBody}</p>
+      </div>
+
+      {/* ── Contact strip ── */}
+      <div className={`grid ${compact ? "grid-cols-1" : "sm:grid-cols-3"} divide-y sm:divide-y-0 sm:divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
+        {[
+          { icon: Phone, label: "Phone", value: site.phone },
+          { icon: MapPin, label: "Address", value: site.address },
+          { icon: Clock, label: "Hours", value: site.hours },
+        ].map(({ icon: Icon, label, value }) => (
+          <div key={label} className="flex items-start gap-3 px-6 py-5">
+            <Icon size={16} className={`mt-0.5 flex-shrink-0 ${cs.accent}`} />
+            <div>
+              <p className={`text-xs font-semibold ${textBase}`}>{label}</p>
+              <p className={`text-xs mt-0.5 ${textMuted}`}>{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── CTA ── */}
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={unsplash(site.heroPhoto, 1200, 500)}
+          alt="cta background"
+          className="w-full object-cover"
+          style={{ height: compact ? 500 : 440 }}
+        />
+        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 py-12 text-center">
+          <h2 className="text-xl font-bold text-white mb-2">{site.ctaHeading}</h2>
+          <p className="text-sm text-white/80 mb-6 max-w-md">{site.ctaBody}</p>
+          <div className="w-full max-w-md bg-white rounded-xl p-5 text-left space-y-3">
+            <input placeholder="Your name" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
+            <input placeholder="Phone or email" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
+            <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
+            <button className={`w-full font-semibold py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover} transition-colors`}>
+              {site.ctaButtonLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Footer ── */}
+      <div className="px-6 py-8 text-center text-xs bg-gray-950 text-gray-500">
+        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved.
+        <span className="ml-2 text-gray-700">Powered by InstantLocalBusiness.com</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Static template MockWebsite (used for demo/examples pages) ──────────────
 
 function MockWebsite({
   template,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Mail, Phone, MapPin } from "lucide-react";
+import { CheckCircle2, Mail, Phone, MapPin, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
@@ -13,6 +13,8 @@ export default function ContactPage() {
     message: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -25,10 +27,25 @@ export default function ContactPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    setSent(true);
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Failed to send");
+      setSent(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -193,11 +210,19 @@ export default function ContactPage() {
                   )}
                 </div>
 
+                {submitError && (
+                  <p className="text-sm text-red-500 bg-red-50 px-4 py-3 rounded-xl">{submitError}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors"
+                  disabled={submitting}
+                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Send Message
+                  {submitting ? (
+                    <><Loader2 size={16} className="animate-spin" /> Sending...</>
+                  ) : (
+                    "Send Message"
+                  )}
                 </button>
               </form>
             )}

@@ -1,0 +1,98 @@
+import { NextRequest, NextResponse } from "next/server";
+import { generateSiteContent, type BusinessInput } from "@/lib/generate-site";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
+import { guardInputs } from "@/lib/input-guard";
+
+export const maxDuration = 30;
+
+export async function POST(req: NextRequest) {
+  try {
+    // ── Origin check — block requests not from our own domain ──────────────
+    const origin = req.headers.get("origin");
+    const host = req.headers.get("host");
+    const allowedOrigins = [
+      process.env.NEXT_PUBLIC_SITE_URL,
+      `http://localhost:3000`,
+      `http://localhost:3001`,
+      host ? `https://${host}` : null,
+    ].filter(Boolean);
+
+    if (
+      process.env.NODE_ENV === "production" &&
+      origin &&
+      !allowedOrigins.some((o) => o && origin.startsWith(o))
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // ── Rate limit: 3 site generations per IP per day ──────────────────────
+    const ip = getClientIP(req);
+    const rl = await checkRateLimit(ip, "generate");
+    if (!rl.success) {
+      const resetMins = Math.ceil((rl.resetAt - Date.now()) / 60000);
+      return NextResponse.json(
+        { error: `Too many requests. You can generate again in ${resetMins} minutes.` },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
+    }
+
+    const body = await req.json() as BusinessInput;
+
+    // ── Input guard: length + injection + junk ─────────────────────────────
+    const guard = guardInputs({
+      businessName: body.businessName,
+      category:     body.category,
+      city:         body.city,
+      state:        body.state,
+      phone:        body.phone,
+      email:        body.email,
+      address:      body.address,
+      description:  body.description,
+      services:     body.services,
+      hours:        body.hours,
+    });
+    if (!guard.ok) {
+      return NextResponse.json({ error: guard.error }, { status: 400 });
+    }
+
+    // ── Required fields ────────────────────────────────────────────────────
+    const required: (keyof BusinessInput)[] = [
+      "businessName", "category", "city", "state", "phone", "email", "description",
+    ];
+    for (const field of required) {
+      if (!body[field]?.toString().trim()) {
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // ── AI key check ───────────────────────────────────────────────────────
+    const hasKey =
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      process.env.DEEPSEEK_API_KEY;
+
+    if (!hasKey) {
+      return NextResponse.json(
+        { error: "No AI API key configured. Add OPENAI_API_KEY to .env.local" },
+        { status: 503 }
+      );
+    }
+
+    const site = await generateSiteContent(body);
+    return NextResponse.json({ success: true, site });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[/api/generate]", message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

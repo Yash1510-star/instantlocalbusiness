@@ -73,6 +73,7 @@ export function BuildFlow() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(initialData);
   const [loading, setLoading] = useState(false);
+  const [loadingError, setLoadingError] = useState("");
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
   const update = (field: keyof FormData, value: string) => {
@@ -117,14 +118,46 @@ export function BuildFlow() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    // Simulate AI generation delay
-    await new Promise((res) => setTimeout(res, 3000));
-    setLoading(false);
-    const slug = form.businessName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    router.push(`/preview/${slug}`);
+    setLoadingError("");
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: form.businessName,
+          category: form.category,
+          city: form.city,
+          state: form.state,
+          phone: form.phone,
+          email: form.email,
+          address: form.address,
+          description: form.description,
+          services: form.services,
+          hours: form.hours,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Generation failed");
+      }
+
+      // Use a unique key that never collides with static templates
+      const slug = form.businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      const uniqueKey = `${slug}-${Date.now()}`;
+      sessionStorage.setItem(`site_${uniqueKey}`, JSON.stringify(data.site));
+      router.push(`/preview/${uniqueKey}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setLoadingError(msg);
+      setLoading(false);
+    }
   };
 
   return (
@@ -169,27 +202,45 @@ export function BuildFlow() {
       <div className="bg-white rounded-2xl border border-gray-200 p-8">
         {loading ? (
           <div className="py-20 text-center">
-            <Loader2 size={40} className="text-blue-600 animate-spin mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Building your website...
-            </h2>
-            <p className="text-gray-500 max-w-sm mx-auto">
-              Our AI is writing your copy, choosing your layout, and setting up
-              your SEO. This takes about 5 seconds.
-            </p>
-            <div className="mt-8 space-y-2 text-sm text-gray-400 text-left max-w-xs mx-auto">
-              {[
-                "Writing homepage copy...",
-                "Optimizing for local SEO...",
-                "Setting up contact forms...",
-                "Configuring Google Maps...",
-              ].map((task) => (
-                <div key={task} className="flex items-center gap-2">
-                  <CheckCircle2 size={14} className="text-green-500" />
-                  {task}
+            {loadingError ? (
+              <>
+                <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-red-500 text-xl">!</span>
                 </div>
-              ))}
-            </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Generation failed</h2>
+                <p className="text-red-500 text-sm max-w-sm mx-auto mb-6">{loadingError}</p>
+                <button
+                  onClick={() => { setLoading(false); setLoadingError(""); }}
+                  className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors text-sm"
+                >
+                  Try Again
+                </button>
+              </>
+            ) : (
+              <>
+                <Loader2 size={40} className="text-blue-600 animate-spin mx-auto mb-6" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Building your website...
+                </h2>
+                <p className="text-gray-500 max-w-sm mx-auto">
+                  Our AI is writing your copy, choosing your layout, and setting up
+                  your SEO. This takes about 5 seconds.
+                </p>
+                <div className="mt-8 space-y-2 text-sm text-gray-400 text-left max-w-xs mx-auto">
+                  {[
+                    "Writing homepage copy...",
+                    "Optimizing for local SEO...",
+                    "Setting up contact forms...",
+                    "Configuring Google Maps...",
+                  ].map((task) => (
+                    <div key={task} className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-green-500" />
+                      {task}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <>
