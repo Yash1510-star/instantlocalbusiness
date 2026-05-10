@@ -20,6 +20,7 @@ export type SavedSite = {
   publishedAt: string;
   businessEmail: string;
   businessName: string;
+  userId?: string; // Clerk user ID — set when user is signed in at publish time
   plan: "starter" | "pro" | "business";
   status: "live" | "draft" | "suspended";
   site: GeneratedSite;
@@ -27,18 +28,23 @@ export type SavedSite = {
 
 // ─── File store ───────────────────────────────────────────────────────────────
 
-async function fileGet(slug: string): Promise<SavedSite | null> {
-  if (process.env.NODE_ENV === "production") return null;
+async function fileGetAll(): Promise<Record<string, SavedSite>> {
+  if (process.env.NODE_ENV === "production") return {};
   const { readFile } = await import("fs/promises");
   const path = await import("path");
   const filePath = path.join(process.cwd(), "data", "sites.json");
   try {
     const raw = await readFile(filePath, "utf-8");
-    const all = JSON.parse(raw) as Record<string, SavedSite>;
-    return all[slug] ?? null;
+    return JSON.parse(raw) as Record<string, SavedSite>;
   } catch {
-    return null;
+    return {};
   }
+}
+
+async function fileGet(slug: string): Promise<SavedSite | null> {
+  if (process.env.NODE_ENV === "production") return null;
+  const all = await fileGetAll();
+  return all[slug] ?? null;
 }
 
 async function fileSet(slug: string, data: SavedSite): Promise<void> {
@@ -76,6 +82,11 @@ export async function getSite(slug: string): Promise<SavedSite | null> {
 
 export async function saveSite(data: SavedSite): Promise<void> {
   return fileSet(data.slug, data);
+}
+
+export async function getSitesByUser(userId: string): Promise<SavedSite[]> {
+  const all = await fileGetAll();
+  return Object.values(all).filter((s) => s.userId === userId);
 }
 
 export function generateSlug(businessName: string, city: string): string {

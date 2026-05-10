@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { saveSite, getSite, generateSlug, type SavedSite } from "@/lib/site-store";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import type { GeneratedSite } from "@/lib/generate-site";
@@ -11,6 +12,15 @@ export async function POST(req: NextRequest) {
     const rl = await checkRateLimit(ip, "default");
     if (!rl.success) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
+    // Capture signed-in user ID if available (optional — guests can still publish)
+    let userId: string | undefined;
+    try {
+      const session = await auth();
+      userId = session.userId ?? undefined;
+    } catch {
+      // Clerk not configured or user not signed in — proceed anonymously
     }
 
     const body = await req.json() as {
@@ -38,6 +48,7 @@ export async function POST(req: NextRequest) {
       publishedAt: new Date().toISOString(),
       businessEmail: body.businessEmail,
       businessName: body.businessName,
+      userId,
       plan: body.plan ?? "starter",
       status: "live",
       site: body.site,
