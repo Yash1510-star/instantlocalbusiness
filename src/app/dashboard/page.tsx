@@ -101,7 +101,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-gray-900 truncate">{s.businessName}</p>
-                    <p className="text-xs text-gray-400 truncate">{s.site?.category ?? ""}</p>
+                    <p className="text-xs text-gray-400 truncate capitalize">{s.site?.layout ?? "website"}</p>
                   </div>
                 </div>
                 <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
