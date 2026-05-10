@@ -1,0 +1,16 @@
+{
+  "name": "InstantLocalBusiness.com",
+  "short_name": "InstantLocalBiz",
+  "description": "AI-powered websites for local businesses. Live in 60 seconds.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
