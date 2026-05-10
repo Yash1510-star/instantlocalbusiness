@@ -26,8 +26,8 @@ type RouteConfig = {
 };
 
 const ROUTE_CONFIGS: Record<string, RouteConfig> = {
-  generate: { limit: 3,  windowMs: 24 * 60 * 60 * 1000 }, // 3/day per IP
-  publish:  { limit: 5,  windowMs: 24 * 60 * 60 * 1000 }, // 5/day per IP
+  generate: { limit: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10/day per IP (raise to 3 after testing)
+  publish:  { limit: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10/day per IP
   contact:  { limit: 5,  windowMs: 60 * 60 * 1000       }, // 5/hour per IP
   default:  { limit: 20, windowMs: 60 * 60 * 1000       },
 };
@@ -87,7 +87,14 @@ export async function checkRateLimit(
   const config = ROUTE_CONFIGS[route] ?? ROUTE_CONFIGS.default;
   const key = `rl:${route}:${ip}`;
 
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  // Support both Vercel Upstash integration (KV_*) and direct Upstash keys (UPSTASH_*)
+  const redisUrl = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (redisUrl && redisToken) {
+    // Temporarily set for the Upstash client
+    process.env.UPSTASH_REDIS_REST_URL = redisUrl;
+    process.env.UPSTASH_REDIS_REST_TOKEN = redisToken;
     try {
       return await upstashRateLimit(key, config.limit, config.windowMs);
     } catch (err) {

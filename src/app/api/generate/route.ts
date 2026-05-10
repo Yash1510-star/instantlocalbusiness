@@ -30,8 +30,12 @@ export async function POST(req: NextRequest) {
     const rl = await checkRateLimit(ip, "generate");
     if (!rl.success) {
       const resetMins = Math.ceil((rl.resetAt - Date.now()) / 60000);
+      const resetHrs = Math.ceil(resetMins / 60);
+      const resetMsg = resetMins < 60
+        ? `${resetMins} minute${resetMins === 1 ? "" : "s"}`
+        : `${resetHrs} hour${resetHrs === 1 ? "" : "s"}`;
       return NextResponse.json(
-        { error: `Too many requests. You can generate again in ${resetMins} minutes.` },
+        { error: `You can generate again in ${resetMsg}.` },
         {
           status: 429,
           headers: {
