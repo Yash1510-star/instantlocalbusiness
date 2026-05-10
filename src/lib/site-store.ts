@@ -28,6 +28,7 @@ export type SavedSite = {
 // ─── File store ───────────────────────────────────────────────────────────────
 
 async function fileGet(slug: string): Promise<SavedSite | null> {
+  if (process.env.NODE_ENV === "production") return null;
   const { readFile } = await import("fs/promises");
   const path = await import("path");
   const filePath = path.join(process.cwd(), "data", "sites.json");
@@ -41,6 +42,13 @@ async function fileGet(slug: string): Promise<SavedSite | null> {
 }
 
 async function fileSet(slug: string, data: SavedSite): Promise<void> {
+  // Vercel and most serverless platforms have a read-only filesystem.
+  // Skip file writes in production — use Vercel KV instead (set KV env vars).
+  if (process.env.NODE_ENV === "production") {
+    console.log(`[site-store] Production: skipping file write for slug "${slug}". Configure Vercel KV for persistence.`);
+    return;
+  }
+
   const { readFile, writeFile, mkdir } = await import("fs/promises");
   const path = await import("path");
   const dir = path.join(process.cwd(), "data");
