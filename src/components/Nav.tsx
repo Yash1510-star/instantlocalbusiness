@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
+import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/#features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/#testimonials", label: "Reviews" },
 ];
 
 export function Nav() {
@@ -41,18 +41,31 @@ export function Nav() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/signin"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/build"
-              className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Get Started Free
-            </Link>
+            <SignedOut>
+              <Link
+                href="/signin"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/build"
+                className="bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Get Started Free
+              </Link>
+            </SignedOut>
+
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <LayoutDashboard size={15} />
+                Dashboard
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
 
           <button
@@ -78,18 +91,32 @@ export function Nav() {
             </Link>
           ))}
           <div className="pt-2 flex flex-col gap-2">
-            <Link
-              href="/signin"
-              className="text-center text-sm font-medium text-gray-600 py-2 border border-gray-200 rounded-lg"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/build"
-              className="text-center bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg"
-            >
-              Get Started Free
-            </Link>
+            <SignedOut>
+              <Link
+                href="/signin"
+                className="text-center text-sm font-medium text-gray-600 py-2 border border-gray-200 rounded-lg"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/build"
+                className="text-center bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg"
+              >
+                Get Started Free
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="text-center text-sm font-medium text-gray-600 py-2 border border-gray-200 rounded-lg"
+              >
+                Dashboard
+              </Link>
+              <div className="flex justify-center">
+                <UserButton afterSignOutUrl="/" />
+              </div>
+            </SignedIn>
           </div>
         </div>
       )}
