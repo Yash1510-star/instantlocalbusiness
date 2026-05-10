@@ -7,7 +7,6 @@ import {
   MapPin,
   MessageSquare,
   RefreshCw,
-  Star,
   CheckCircle2,
 } from "lucide-react";
 
@@ -90,56 +89,6 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Maria Torres",
-    business: "Maria's Tacos",
-    location: "Austin, TX",
-    rating: 5,
-    quote:
-      "I had a website in 45 seconds. Showed my customers at lunch and they thought I paid a designer thousands of dollars.",
-  },
-  {
-    name: "Derek Lawson",
-    business: "Lakeside Plumbing",
-    location: "Denver, CO",
-    rating: 5,
-    quote:
-      "Went from zero web presence to ranking on the first page of Google in 3 weeks. This thing genuinely works.",
-  },
-  {
-    name: "Priya Sharma",
-    business: "Glow Salon",
-    location: "Atlanta, GA",
-    rating: 5,
-    quote:
-      "The booking form alone paid for a year of the Pro plan in the first month. Complete game changer.",
-  },
-  {
-    name: "James Whitfield",
-    business: "Whitfield Electric",
-    location: "Phoenix, AZ",
-    rating: 5,
-    quote:
-      "I'm not a tech person at all. Had my site live in under a minute. Now I get calls from the website every week.",
-  },
-  {
-    name: "Linda Chen",
-    business: "Paws & Play Grooming",
-    location: "Seattle, WA",
-    rating: 5,
-    quote:
-      "The AI wrote better copy about my business than I ever could. Clients tell me they found me on Google all the time now.",
-  },
-  {
-    name: "Roberto Fuentes",
-    business: "Fuentes Auto Repair",
-    location: "Miami, FL",
-    rating: 5,
-    quote:
-      "Went from a handwritten sign to a professional website. My appointments doubled in the first month.",
-  },
-];
 
 const pricingPlans = [
   {
@@ -240,13 +189,12 @@ export default function Home() {
             No credit card required. Free plan available.
           </p>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto">
+          {/* Stats — only real, verifiable claims */}
+          <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
             {[
               { value: "60s", label: "Average time to live" },
-              { value: "12,400+", label: "Businesses launched" },
-              { value: "98%", label: "Customer satisfaction" },
               { value: "$0", label: "To start today" },
+              { value: "16+", label: "Industries supported" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl font-extrabold text-gray-900">
@@ -459,48 +407,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimonials" className="py-24 bg-gray-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Loved by local business owners
-            </h2>
-            <p className="mt-4 text-lg text-gray-500">
-              Real stories from real businesses.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="bg-white rounded-2xl border border-gray-100 p-6"
-              >
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={14}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {t.business} — {t.location}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
@@ -508,8 +414,7 @@ export default function Home() {
             Your website is 60 seconds away.
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            Join 12,400+ local businesses already live on InstantLocalBusiness.com.
-            No designer, no developer, no delays.
+            No designer. No developer. No delays. Just describe your business and go live.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
