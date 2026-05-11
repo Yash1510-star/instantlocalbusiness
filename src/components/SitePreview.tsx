@@ -729,27 +729,33 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
   const cs = site.colorScheme;
-  const isDark = cs.heroBg.includes("950") || cs.heroBg.includes("900") || cs.heroBg === "bg-black";
+  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white") || cs.heroBg === "bg-white";
+  const isDark = !isLight;
 
   const textBase = isDark ? "text-white" : "text-gray-900";
   const textMuted = isDark ? "text-gray-400" : "text-gray-500";
   const sectionBg = isDark ? "bg-gray-900" : "bg-white";
   const altBg = isDark ? "bg-gray-800" : "bg-gray-50";
   const borderColor = isDark ? "border-gray-700" : "border-gray-100";
+  const navText = isLight ? "text-gray-600 hover:text-gray-900" : "text-gray-300 hover:text-white";
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <div className={`font-sans ${sectionBg} ${textBase}`}>
 
       {/* ── Nav ── */}
-      <nav className={`flex items-center justify-between px-6 py-4 border-b ${borderColor} ${cs.navBg} backdrop-blur-sm`}>
+      <nav className={`flex items-center justify-between px-6 py-4 border-b ${borderColor} ${isLight ? "bg-white/95" : cs.navBg} backdrop-blur-sm sticky top-0 z-10`}>
         <div>
-          <span className={`font-extrabold text-base ${textBase}`}>{site.heroHeadline.split(":")[0] || "Business"}</span>
+          <span className={`font-extrabold text-base ${isLight ? "text-gray-900" : "text-white"}`}>{site.heroHeadline.split(":")[0] || "Business"}</span>
           <p className={`text-xs mt-0.5 ${textMuted}`}>{site.tagline}</p>
         </div>
         {!compact && (
-          <div className={`flex items-center gap-5 text-sm ${textMuted}`}>
-            {["About", "Services", "Contact"].map((l) => (
-              <span key={l} className="cursor-pointer hover:opacity-70 transition-opacity">{l}</span>
+          <div className={`flex items-center gap-6 text-sm font-medium`}>
+            {[{label:"About", id:"about"},{label:"Services", id:"services"},{label:"Contact", id:"contact"}].map(({label, id}) => (
+              <button key={id} onClick={() => scrollTo(id)} className={`transition-colors ${navText}`}>{label}</button>
             ))}
           </div>
         )}
@@ -813,7 +819,7 @@ function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boole
       </div>
 
       {/* ── Services ── */}
-      <div className={`px-6 py-14 ${sectionBg}`}>
+      <div id="services" className={`px-6 py-14 ${sectionBg}`}>
         <h2 className={`text-xl font-bold text-center mb-2 ${textBase}`}>Our Services</h2>
         <p className={`text-sm text-center mb-8 ${textMuted}`}>{site.aboutTitle}</p>
         <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
@@ -843,13 +849,13 @@ function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boole
       </div>
 
       {/* ── About ── */}
-      <div className={`px-8 py-12 ${altBg} text-center`}>
+      <div id="about" className={`px-8 py-12 ${altBg} text-center`}>
         <h2 className={`text-lg font-bold mb-3 ${textBase}`}>{site.aboutTitle}</h2>
         <p className={`text-sm leading-relaxed max-w-2xl mx-auto ${textMuted}`}>{site.aboutBody}</p>
       </div>
 
       {/* ── Contact strip ── */}
-      <div className={`grid ${compact ? "grid-cols-1" : "sm:grid-cols-3"} divide-y sm:divide-y-0 sm:divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
+      <div id="contact" className={`grid ${compact ? "grid-cols-1" : "sm:grid-cols-3"} divide-y sm:divide-y-0 sm:divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
         {[
           { icon: Phone, label: "Phone", value: site.phone },
           { icon: MapPin, label: "Address", value: site.address },
@@ -926,9 +932,10 @@ function MockWebsite({
           </p>
         </div>
         {!compact && (
-          <div className={`flex items-center gap-5 text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-            {template.navLinks.map((l) => (
-              <span key={l} className="cursor-pointer hover:opacity-70 transition-opacity">{l}</span>
+          <div className={`flex items-center gap-5 text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            {[{label:"About",id:"mock-about"},{label:"Services",id:"mock-services"},{label:"Contact",id:"mock-contact"}].map(({label,id}) => (
+              <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({behavior:"smooth"})}
+                className="hover:opacity-70 transition-opacity">{label}</button>
             ))}
           </div>
         )}
@@ -1002,7 +1009,7 @@ function MockWebsite({
       )}
 
       {/* Services — photo cards */}
-      <div className={`px-6 py-14 ${isDark ? "bg-gray-900" : "bg-white"}`}>
+      <div id="mock-services" className={`px-6 py-14 ${isDark ? "bg-gray-900" : "bg-white"}`}>
         <h2 className={`text-xl font-bold text-center mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
           Our Services
         </h2>
@@ -1042,6 +1049,7 @@ function MockWebsite({
 
       {/* Contact info strip */}
       <div
+        id="mock-contact"
         className={`grid ${compact ? "grid-cols-1" : "sm:grid-cols-3"} divide-y sm:divide-y-0 sm:divide-x ${
           isDark ? "divide-gray-700 bg-gray-800" : "divide-gray-100 bg-gray-50"
         }`}

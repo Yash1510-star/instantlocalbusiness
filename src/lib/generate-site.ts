@@ -309,8 +309,18 @@ You write compelling, professional, SEO-optimized copy for local business websit
 Your copy is specific to the industry, location, and business — never generic.
 You always return valid JSON with no extra text, markdown, or code blocks.`;
 
+function getCategoryConfig(category: string) {
+  const exact = CATEGORY_LAYOUT[category];
+  if (exact) return exact;
+  const fuzzy = Object.entries(CATEGORY_LAYOUT).find(([key]) => {
+    const cat = category.toLowerCase();
+    return key.toLowerCase().split(/[\s/,]+/).some((w) => w.length > 3 && cat.includes(w));
+  });
+  return fuzzy?.[1] ?? DEFAULT_LAYOUT;
+}
+
 function buildPrompt(input: BusinessInput): string {
-  const { layout } = CATEGORY_LAYOUT[input.category] ?? DEFAULT_LAYOUT;
+  const { layout } = getCategoryConfig(input.category);
 
   const layoutGuidance: Record<LayoutVariant, string> = {
     hospitality: "Focus on appetite appeal, ambiance, and experience. CTAs should be 'Order Now', 'Reserve a Table', 'View Menu'. Trust points emphasize freshness, local ingredients, family recipes.",
@@ -401,9 +411,20 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
     throw new Error("AI returned insufficient services");
   }
 
-  // Attach layout + color scheme based on category
-  const { layout, colorScheme } = CATEGORY_LAYOUT[input.category] ?? DEFAULT_LAYOUT;
-  const photos = CATEGORY_PHOTOS[input.category] ?? DEFAULT_PHOTOS;
+  // Attach layout + color scheme — try exact match first, then fuzzy keyword match
+  const exactMatch = CATEGORY_LAYOUT[input.category];
+  const fuzzyMatch = exactMatch ? null : Object.entries(CATEGORY_LAYOUT).find(([key]) => {
+    const cat = input.category.toLowerCase();
+    return key.toLowerCase().split(/[\s/,]+/).some((word) => word.length > 3 && cat.includes(word));
+  });
+  const { layout, colorScheme } = exactMatch ?? fuzzyMatch?.[1] ?? DEFAULT_LAYOUT;
+
+  const exactPhotos = CATEGORY_PHOTOS[input.category];
+  const fuzzyPhotos = exactPhotos ? null : Object.entries(CATEGORY_PHOTOS).find(([key]) => {
+    const cat = input.category.toLowerCase();
+    return key.toLowerCase().split(/[\s/,]+/).some((word) => word.length > 3 && cat.includes(word));
+  });
+  const photos = exactPhotos ?? fuzzyPhotos?.[1] ?? DEFAULT_PHOTOS;
 
   const site: GeneratedSite = {
     ...parsed,
