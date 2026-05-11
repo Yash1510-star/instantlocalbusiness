@@ -98,9 +98,9 @@ const pricingPlans = [
     name: "Starter",
     price: "Free",
     period: "",
-    description: "Perfect for getting started",
+    description: "Get online with no cost, ever",
     features: [
-      "1-page website",
+      "1-page AI-built website",
       "AI copywriting",
       "Mobile responsive",
       "InstantLocalBusiness subdomain",
@@ -112,35 +112,35 @@ const pricingPlans = [
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "$19",
     period: "/month",
     description: "For growing local businesses",
     features: [
       "Up to 10 pages",
-      "Custom domain",
-      "SEO tools & analytics",
+      "Custom domain included",
+      "Local SEO tools & analytics",
       "Contact & booking forms",
-      "Google Maps & reviews",
-      "AI chat widget",
+      "Google Maps & business hours",
+      "Review collection tool",
       "Priority support",
     ],
-    cta: "Start Pro Trial",
+    cta: "Start Free Trial",
     href: "/build?plan=pro",
     highlighted: true,
   },
   {
     name: "Business",
-    price: "$79",
+    price: "$49",
     period: "/month",
     description: "For established businesses",
     features: [
       "Unlimited pages",
       "Everything in Pro",
+      "Multiple locations",
       "Online ordering / e-commerce",
       "Team members",
       "White-glove onboarding",
       "Dedicated account manager",
-      "Custom integrations",
     ],
     cta: "Contact Sales",
     href: "/contact",
@@ -365,11 +365,14 @@ export default function Home() {
       <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
+              🎉 Early adopter pricing — lock your rate for life
+            </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
               Simple, transparent pricing
             </h2>
             <p className="mt-4 text-lg text-gray-500">
-              Start free. Upgrade when you&apos;re ready.
+              Start free. Pro at just $19/mo — less than a tank of gas.
             </p>
           </div>
 

@@ -12,43 +12,44 @@ const plans = [
     name: "Starter",
     price: "Free",
     period: "",
-    description: "Perfect for getting your business online",
+    description: "Get your business online today — no card needed",
     features: [
-      "1-page website",
-      "AI copywriting",
+      "1-page AI-built website",
+      "AI copywriting, tailored to your business",
       "Mobile responsive design",
       "InstantLocalBusiness subdomain",
       "Contact form",
       "SSL certificate",
+      "Publish & go live instantly",
     ],
     notIncluded: [
       "Custom domain",
       "SEO analytics",
       "Booking forms",
       "Google Maps integration",
-      "AI chat widget",
     ],
     cta: "Start Free",
     href: "/build",
     highlighted: false,
+    badge: "",
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "$19",
     period: "/month",
-    annual: "$23",
-    description: "Everything growing local businesses need",
+    annual: "$15",
+    description: "Everything a growing local business needs",
     features: [
       "Up to 10 pages",
       "Custom domain included",
-      "SEO tools & analytics dashboard",
+      "Local SEO tools & analytics",
       "Contact & appointment booking forms",
       "Google Maps & business hours",
-      "AI chat widget",
       "Review collection tool",
       "Priority email support",
       "SSL certificate",
       "99.9% uptime SLA",
+      "Early adopter price — locked for life",
     ],
     notIncluded: [],
     cta: "Start 14-Day Free Trial",
@@ -58,13 +59,14 @@ const plans = [
   },
   {
     name: "Business",
-    price: "$79",
+    price: "$49",
     period: "/month",
-    annual: "$63",
+    annual: "$39",
     description: "For established businesses ready to scale",
     features: [
       "Unlimited pages",
       "Everything in Pro",
+      "Multiple business locations",
       "Online ordering / e-commerce",
       "Team member accounts",
       "Advanced analytics",
@@ -72,12 +74,12 @@ const plans = [
       "Dedicated account manager",
       "Custom integrations (Zapier, etc.)",
       "Phone & chat support",
-      "Custom contract available",
     ],
     notIncluded: [],
     cta: "Contact Sales",
     href: "/contact",
     highlighted: false,
+    badge: "",
   },
 ];
 
@@ -112,11 +114,17 @@ export default function PricingPage() {
   return (
     <>
       <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 text-center">
+        <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+          🎉 Early adopter pricing — lock your rate for life when you sign up today
+        </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight">
           Simple, transparent pricing
         </h1>
         <p className="mt-4 text-xl text-gray-500 max-w-xl mx-auto">
           Start free. Upgrade when you&apos;re ready. Cancel anytime.
+        </p>
+        <p className="mt-3 text-sm text-gray-400">
+          Pro at $19/mo — less than a tank of gas. No contracts, no surprises.
         </p>
       </section>
 
@@ -250,7 +258,7 @@ export default function PricingPage() {
           Ready to get started?
         </h2>
         <p className="mt-3 text-gray-500">
-          Join 12,400+ local businesses live on InstantLocalBusiness.com
+          Free to start. No credit card required.
         </p>
         <Link
           href="/build"
