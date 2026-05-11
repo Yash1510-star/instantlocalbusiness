@@ -82,8 +82,8 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className="bg-white text-gray-900 antialiased">
+      <html lang="en" style={{ colorScheme: "light", background: "#ffffff" }}>
+        <body className="antialiased" style={{ background: "#ffffff", color: "#111827" }}>
           <Nav />
           <main>{children}</main>
           <Footer />
