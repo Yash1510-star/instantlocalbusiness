@@ -2,7 +2,7 @@
 
 import { useUser, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
-import { Globe, Plus, LogOut, ExternalLink, Clock, Sparkles } from "lucide-react";
+import { Globe, Plus, LogOut, ExternalLink, Clock, Sparkles, Rocket, CalendarDays } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { SavedSite } from "@/lib/site-store";
 
@@ -52,19 +52,49 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Quick action */}
-      <Link
-        href="/build"
-        className="flex items-center gap-4 p-5 border border-blue-100 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors mb-8"
-      >
-        <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0">
-          <Plus size={18} />
+      {/* Quick action — gated at 2 sites */}
+      {!loading && sites.length >= 1 ? (
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5 mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-indigo-600 rounded-lg text-white shrink-0">
+              <Rocket size={18} />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">You&apos;ve used your free site</p>
+              <p className="text-xs text-gray-500 mt-0.5">Upgrade to Pro or book a demo to publish more</p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Link
+              href="/signup"
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 py-2.5 rounded-xl transition-colors"
+            >
+              <Rocket size={14} />
+              Sign up for Pro
+            </Link>
+            <Link
+              href="/demo"
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-700 border border-gray-200 hover:bg-white py-2.5 rounded-xl transition-colors"
+            >
+              <CalendarDays size={14} />
+              Book a demo
+            </Link>
+          </div>
         </div>
-        <div>
-          <p className="font-semibold text-gray-900">Build a new website</p>
-          <p className="text-xs text-gray-500 mt-0.5">Launch in 60 seconds with AI</p>
-        </div>
-      </Link>
+      ) : (
+        <Link
+          href="/build"
+          className="flex items-center gap-4 p-5 border border-blue-100 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors mb-8"
+        >
+          <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0">
+            <Plus size={18} />
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">Build a new website</p>
+            <p className="text-xs text-gray-500 mt-0.5">Launch in 60 seconds with AI</p>
+          </div>
+        </Link>
+      )}
 
       {/* Sites section */}
       <h2 className="text-lg font-bold text-gray-900 mb-4">Your websites</h2>
@@ -126,13 +156,23 @@ export default function DashboardPage() {
                   <ExternalLink size={12} />
                   Visit site
                 </a>
-                <Link
-                  href="/build"
-                  className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 py-2 rounded-lg transition-colors"
-                >
-                  <Plus size={12} />
-                  New site
-                </Link>
+                {sites.length >= 1 ? (
+                  <Link
+                    href="/signup"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-2 rounded-lg transition-colors"
+                  >
+                    <Rocket size={12} />
+                    Upgrade
+                  </Link>
+                ) : (
+                  <Link
+                    href="/build"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 py-2 rounded-lg transition-colors"
+                  >
+                    <Plus size={12} />
+                    New site
+                  </Link>
+                )}
               </div>
             </div>
           ))}

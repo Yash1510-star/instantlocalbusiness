@@ -42,3 +42,37 @@ html {
   box-shadow: 0 0 24px rgba(99,102,241,0.5);
   opacity: 0.92;
 }
+
+/* Nav header */
+.nav-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10,10,15,0.85);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Nav mobile drawer */
+.nav-drawer {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(10,10,15,0.97);
+}
+
+/* Nav logo text */
+.nav-logo-text {
+  color: #f1f5f9;
+}
+.nav-logo-accent {
+  color: #818cf8;
+}
+.nav-logo-badge {
+  color: #475569;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Nav hamburger button */
+.nav-hamburger {
+  color: #94a3b8;
+}

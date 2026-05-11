@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateSiteContent, type BusinessInput } from "@/lib/generate-site";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { guardInputs } from "@/lib/input-guard";
+import { auth } from "@clerk/nextjs/server";
+import { getSitesByUser } from "@/lib/site-store";
+
+const FREE_SITE_LIMIT = 1;
 
 export const maxDuration = 30;
 
@@ -44,6 +48,23 @@ export async function POST(req: NextRequest) {
           },
         }
       );
+    }
+
+    // ── Per-user site cap (signed-in users only) ───────────────────────────
+    try {
+      const { userId } = await auth();
+      const capDisabled = process.env.DISABLE_SITE_CAP === "true" && process.env.NODE_ENV !== "production";
+      if (userId && !capDisabled) {
+        const existing = await getSitesByUser(userId);
+        if (existing.length >= FREE_SITE_LIMIT) {
+          return NextResponse.json(
+            { error: `Free accounts are limited to ${FREE_SITE_LIMIT} websites. Upgrade to Pro for unlimited sites.` },
+            { status: 403 }
+          );
+        }
+      }
+    } catch {
+      // If auth check fails, continue — IP rate-limit is still active
     }
 
     const body = await req.json() as BusinessInput;

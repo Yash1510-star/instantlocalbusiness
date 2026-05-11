@@ -84,6 +84,15 @@ export async function checkRateLimit(
   ip: string,
   route: keyof typeof ROUTE_CONFIGS | "default" = "default"
 ): Promise<RateLimitResult> {
+  // Local testing override — set DISABLE_RATE_LIMIT=true in .env.local ONLY
+  if (process.env.DISABLE_RATE_LIMIT === "true") {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[rate-limit] CRITICAL: DISABLE_RATE_LIMIT=true in production! Ignoring override.");
+    } else {
+      return { success: true, remaining: 999, resetAt: Date.now() + 86_400_000 };
+    }
+  }
+
   const config = ROUTE_CONFIGS[route] ?? ROUTE_CONFIGS.default;
   const key = `rl:${route}:${ip}`;
 

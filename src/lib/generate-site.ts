@@ -334,7 +334,48 @@ const DEFAULT_LAYOUT: { layout: LayoutVariant; colorScheme: ColorScheme } = {
   },
 };
 
-// ─── Unsplash photo IDs per category ─────────────────────────────────────────
+// ─── Dynamic Unsplash photo search ───────────────────────────────────────────
+
+async function fetchUnsplashPhotos(
+  query: string,
+  count: number,
+): Promise<string[]> {
+  const key = process.env.UNSPLASH_ACCESS_KEY;
+  if (!key) {
+    console.warn("[unsplash] UNSPLASH_ACCESS_KEY not set — using static fallback");
+    return [];
+  }
+  try {
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${Math.min(count, 30)}&orientation=landscape&content_filter=high`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Client-ID ${key}` },
+      // cache: revalidate once per day — same business category always gets
+      // fresh-ish results without hammering the 50 req/hr free limit
+      next: { revalidate: 86400 },
+    } as RequestInit);
+    if (!res.ok) {
+      const body = await res.text();
+      console.error(`[unsplash] HTTP ${res.status} for query="${query}":`, body);
+      return [];
+    }
+    // The short `id` field (e.g. "vjjJBk6GrV8") is NOT the URL path.
+    // Extract the real photo path from urls.raw, e.g.:
+    //   "https://images.unsplash.com/photo-1724589511191-1ced6d014934?..."
+    //   → "photo-1724589511191-1ced6d014934"
+    const data = await res.json() as { results: { urls: { raw: string } }[] };
+    const ids = data.results.map((r) => {
+      const match = r.urls.raw.match(/unsplash\.com\/(photo-[^?]+)/);
+      return match ? match[1] : "";
+    }).filter(Boolean);
+    console.log(`[unsplash] query="${query}" → ${ids.length} ids`);
+    return ids;
+  } catch (err) {
+    console.error("[unsplash] fetch failed:", err);
+    return [];
+  }
+}
+
+// ─── Unsplash photo IDs per category (static fallback) ───────────────────────
 
 const CATEGORY_PHOTOS: Record<string, { hero: string; services: string[] }> = {
   "Restaurant / Cafe": {
@@ -578,19 +619,46 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
   });
   const { layout, colorScheme } = exactMatch ?? fuzzyMatch?.[1] ?? DEFAULT_LAYOUT;
 
+  // Try dynamic Unsplash search first (requires UNSPLASH_ACCESS_KEY).
+  // Use category + city for the hero so images feel location-specific,
+  // and category alone for service cards (city would over-restrict results).
+  const heroQuery   = `${input.category} ${input.city}`;
+  const serviceQuery = input.category;
+
+  const [heroResults, serviceResults] = await Promise.all([
+    fetchUnsplashPhotos(heroQuery, 1),
+    fetchUnsplashPhotos(serviceQuery, 6),
+  ]);
+
+  // If city-specific hero returned nothing, retry with category only
+  const heroResultsFinal = heroResults.length > 0
+    ? heroResults
+    : await fetchUnsplashPhotos(serviceQuery, 1);
+
+  console.log(`[photos] hero query="${heroQuery}" → ${heroResults.length} results, fallback-query results: ${heroResultsFinal.length}`);
+  console.log(`[photos] service query="${serviceQuery}" → ${serviceResults.length} results:`, serviceResults);
+
+  // Fall back to the static table when the API key is absent or returns nothing
   const exactPhotos = CATEGORY_PHOTOS[input.category];
   const fuzzyPhotos = exactPhotos ? null : Object.entries(CATEGORY_PHOTOS).find(([key]) => {
     const cat = input.category.toLowerCase();
     return key.toLowerCase().split(/[\s/,]+/).some((word) => word.length > 3 && cat.includes(word));
   });
-  const photos = exactPhotos ?? fuzzyPhotos?.[1] ?? DEFAULT_PHOTOS;
+  const staticPhotos = exactPhotos ?? fuzzyPhotos?.[1] ?? DEFAULT_PHOTOS;
+
+  const heroPhoto     = heroResultsFinal[0]  ?? staticPhotos.hero;
+  const servicePhotos = serviceResults.length >= 3
+    ? serviceResults
+    : staticPhotos.services;
+
+  console.log(`[photos] using: hero=${heroPhoto} source=${heroResultsFinal.length ? "unsplash" : "static"}`);
 
   const site: GeneratedSite = {
     ...parsed,
     layout,
     colorScheme,
-    heroPhoto: photos.hero,
-    servicePhotos: photos.services,
+    heroPhoto,
+    servicePhotos,
     trustPoints: parsed.trustPoints ?? [],
   };
 

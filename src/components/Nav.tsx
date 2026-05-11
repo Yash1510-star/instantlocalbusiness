@@ -9,6 +9,7 @@ const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/#features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/#testimonials", label: "Testimonials" },
 ];
 
 const GuestButtons = ({ mobile }: { mobile?: boolean }) =>
@@ -57,20 +58,14 @@ export function Nav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50" style={{
-      background: "rgba(10,10,15,0.85)",
-      borderBottom: "1px solid rgba(255,255,255,0.07)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
-    }}>
+    <header className="nav-header">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight" style={{ color: "#f1f5f9" }}>
-              InstantLocal<span style={{ color: "#818cf8" }}>Business</span>
+            <span className="nav-logo-text text-xl font-bold tracking-tight">
+              InstantLocal<span className="nav-logo-accent">Business</span>
             </span>
-            <span className="hidden sm:inline text-xs font-medium rounded px-1.5 py-0.5"
-              style={{ color: "#475569", border: "1px solid rgba(255,255,255,0.1)" }}>.com</span>
+            <span className="nav-logo-badge hidden sm:inline text-xs font-medium rounded px-1.5 py-0.5">.com</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -87,7 +82,7 @@ export function Nav() {
             </ClerkBoundary>
           </div>
 
-          <button className="md:hidden p-2 transition-colors" style={{ color: "#94a3b8" }}
+          <button className="nav-hamburger md:hidden p-2 transition-colors"
             onClick={() => setOpen(!open)} aria-label="Toggle menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -95,10 +90,7 @@ export function Nav() {
       </div>
 
       {open && (
-        <div className="md:hidden px-4 py-4 space-y-3" style={{
-          borderTop: "1px solid rgba(255,255,255,0.07)",
-          background: "rgba(10,10,15,0.97)",
-        }}>
+        <div className="nav-drawer md:hidden px-4 py-4 space-y-3">
           {links.map((l) => (
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
               className="nav-link block text-sm font-medium py-2">{l.label}</Link>

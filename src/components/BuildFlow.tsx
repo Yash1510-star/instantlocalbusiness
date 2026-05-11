@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Loader2, Rocket, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 const categories = [
   "Restaurant / Cafe",
@@ -206,13 +207,72 @@ function RateLimitUpgrade({
   );
 }
 
+function SiteCapGate() {
+  return (
+    <div className="py-10 max-w-md mx-auto text-center">
+      <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-5">
+        <Rocket size={28} className="text-indigo-600" />
+      </div>
+
+      <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
+        You&apos;re building a lot!
+      </h2>
+      <p className="text-gray-500 text-sm mb-8">
+        Free accounts include <span className="font-semibold text-gray-800">1 published website</span>.
+        Upgrade to Pro for unlimited sites, custom domains, and priority support — or chat with us first.
+      </p>
+
+      <div className="space-y-3">
+        <a
+          href="/signup"
+          className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-colors text-sm"
+        >
+          <Rocket size={16} />
+          Sign up for Pro — unlimited sites
+        </a>
+
+        <a
+          href="/demo"
+          className="flex items-center justify-center gap-2 w-full border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3.5 rounded-xl transition-colors text-sm"
+        >
+          <CalendarDays size={16} />
+          Book a demo — we&apos;ll answer your questions
+        </a>
+      </div>
+
+      <p className="mt-6 text-xs text-gray-400">
+        Already on Pro?{" "}
+        <a href="/signin" className="underline hover:text-gray-600">Sign in</a> to continue building.
+      </p>
+    </div>
+  );
+}
+
 export function BuildFlow() {
   const router = useRouter();
+  const { isSignedIn, isLoaded: authLoaded } = useAuth();
+  const [siteCount, setSiteCount] = useState<number | null>(null);
+  const [countLoaded, setCountLoaded] = useState(false);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(initialData);
   const [loading, setLoading] = useState(false);
   const [loadingError, setLoadingError] = useState("");
   const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  useEffect(() => {
+    if (!authLoaded) return;
+    if (!isSignedIn) {
+      setCountLoaded(true);
+      return;
+    }
+    fetch("/api/my-sites")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.sites)) setSiteCount(data.sites.length);
+      })
+      .catch(() => {})
+      .finally(() => setCountLoaded(true));
+  }, [authLoaded, isSignedIn]);
 
   const update = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -288,6 +348,10 @@ export function BuildFlow() {
 
       const data = await res.json();
 
+      if (res.status === 403) {
+        throw new Error("SITE_CAP:" + (data.error || "Site limit reached"));
+      }
+
       if (res.status === 429) {
         throw new Error("RATE_LIMIT:" + (data.error || "Too many requests"));
       }
@@ -315,6 +379,25 @@ export function BuildFlow() {
       setLoading(false);
     }
   };
+
+  if (!authLoaded || !countLoaded) {
+    return (
+      <div className="max-w-2xl mx-auto flex items-center justify-center py-20">
+        <Loader2 size={32} className="text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
+  const capDisabled = process.env.NEXT_PUBLIC_DISABLE_SITE_CAP === "true";
+  if (!capDisabled && isSignedIn && siteCount !== null && siteCount >= 1) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8">
+          <SiteCapGate />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -360,7 +443,9 @@ export function BuildFlow() {
           <div className="py-20 text-center">
             {loadingError ? (
               <>
-                {loadingError.startsWith("RATE_LIMIT:") ? (
+                {loadingError.startsWith("SITE_CAP:") ? (
+                  <SiteCapGate />
+                ) : loadingError.startsWith("RATE_LIMIT:") ? (
                   <RateLimitUpgrade resetMessage={loadingError.replace("RATE_LIMIT:", "")} onBack={() => { setLoading(false); setLoadingError(""); }} businessName={form.businessName} email={form.email} />
                 ) : loadingError.startsWith("SERVICE_ERROR:") ? (
                   <>

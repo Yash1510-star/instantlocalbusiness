@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Nav } from "@/components/Nav";
+import { NavWrapper } from "@/components/NavWrapper";
 import { Footer } from "@/components/Footer";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://instantlocalbusiness.com";
@@ -82,9 +82,9 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" style={{ background: "#0a0a0f" }} suppressHydrationWarning>
-        <body className="antialiased" style={{ background: "#0a0a0f", color: "#f0f0ff" }} suppressHydrationWarning>
-          <Nav />
+      <html lang="en" suppressHydrationWarning>
+        <body className="antialiased" suppressHydrationWarning>
+          <NavWrapper />
           <main>{children}</main>
           <Footer />
         </body>

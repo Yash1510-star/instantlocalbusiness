@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { saveSite, getSite, generateSlug, type SavedSite } from "@/lib/site-store";
+import { saveSite, getSite, getSitesByUser, generateSlug, type SavedSite } from "@/lib/site-store";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import type { GeneratedSite } from "@/lib/generate-site";
+
+const FREE_SITE_LIMIT = 1;
 
 export const maxDuration = 15;
 
@@ -14,13 +16,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    // Capture signed-in user ID if available (optional — guests can still publish)
-    let userId: string | undefined;
-    try {
-      const session = await auth();
-      userId = session.userId ?? undefined;
-    } catch {
-      // Clerk not configured or user not signed in — proceed anonymously
+    // Require authentication — guests cannot publish
+    const session = await auth();
+    const userId = session.userId ?? undefined;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "You must be signed in to publish a website." },
+        { status: 401 }
+      );
+    }
+
+    // Enforce per-user site cap
+    const capDisabled = process.env.DISABLE_SITE_CAP === "true" && process.env.NODE_ENV !== "production";
+    if (!capDisabled) {
+      const existing = await getSitesByUser(userId);
+      if (existing.length >= FREE_SITE_LIMIT) {
+        return NextResponse.json(
+          { error: `Free accounts are limited to ${FREE_SITE_LIMIT} websites. Upgrade to Pro for unlimited sites.` },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json() as {

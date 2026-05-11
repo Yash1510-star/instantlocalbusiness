@@ -512,23 +512,29 @@ export function SitePreview({ slug }: { slug: string }) {
   const [published, setPublished] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
-  const [aiSite, setAiSite] = useState<GeneratedSite | null>(null);
+  const [publishError, setPublishError] = useState("");
+  // Start as undefined (not yet checked) so we can distinguish
+  // "still loading from sessionStorage" from "confirmed missing"
+  const [aiSite, setAiSite] = useState<GeneratedSite | null | undefined>(undefined);
 
   // Static template fallback (for examples/demo pages)
   const staticTemplate = TEMPLATES[slug] ?? buildFallbackTemplate(slug);
 
-  // Load AI-generated content from sessionStorage after hydration
+  // Load AI-generated content from sessionStorage after hydration.
+  // Keep it in sessionStorage until publish succeeds so a page refresh
+  // doesn't lose the site data.
   useEffect(() => {
     const stored = sessionStorage.getItem(`site_${slug}`);
     if (stored) {
       try {
-        const parsed = JSON.parse(stored) as GeneratedSite;
-        setAiSite(parsed);
-        sessionStorage.removeItem(`site_${slug}`);
+        setAiSite(JSON.parse(stored) as GeneratedSite);
+        return;
       } catch {
-        // fall back to static template
+        // fall through
       }
     }
+    // Nothing found — set null so we know the check is done
+    setAiSite(null);
   }, [slug]);
 
   // Display name for toolbar
@@ -537,8 +543,18 @@ export function SitePreview({ slug }: { slug: string }) {
     : staticTemplate.name;
 
   const handlePublish = async () => {
-    if (!aiSite) return;
+    if (publishing) return; // prevent double-clicks
+    if (aiSite === undefined) return; // still loading sessionStorage
+
+    if (!aiSite) {
+      setPublishError("Your preview has expired. Please build your website again.");
+      return;
+    }
+
     setPublishing(true);
+    setPublishError("");
+
+    let redirecting = false;
     try {
       const res = await fetch("/api/publish", {
         method: "POST",
@@ -551,14 +567,24 @@ export function SitePreview({ slug }: { slug: string }) {
           plan: "starter",
         }),
       });
+
+      if (res.status === 401) {
+        redirecting = true;
+        // Site stays in sessionStorage so it survives the sign-up redirect back
+        window.location.href = `/signup?redirect_url=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Publish failed");
+
+      sessionStorage.removeItem(`site_${slug}`);
       setPublishedUrl(data.url);
       setPublished(true);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Publish failed. Please try again.");
+      setPublishError(err instanceof Error ? err.message : "Publish failed. Please try again.");
     } finally {
-      setPublishing(false);
+      if (!redirecting) setPublishing(false);
     }
   };
 
@@ -617,14 +643,18 @@ export function SitePreview({ slug }: { slug: string }) {
               >
                 <Globe size={13} /> View Live Site
               </a>
+            ) : aiSite === undefined ? (
+              <button disabled className="flex items-center gap-1.5 text-xs text-gray-400 border border-gray-600 px-3 py-1.5 rounded-lg opacity-50 cursor-not-allowed">
+                <Globe size={13} /> Loading...
+              </button>
             ) : (
               <button
                 onClick={handlePublish}
-                disabled={publishing || !aiSite}
-                className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                disabled={publishing}
+                className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
               >
                 {publishing ? (
-                  <><span className="animate-spin">⏳</span> Publishing...</>
+                  <><span className="animate-spin inline-block">⏳</span> Publishing...</>
                 ) : (
                   <><Globe size={13} /> Publish</>
                 )}
@@ -633,6 +663,28 @@ export function SitePreview({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
+
+      {publishError && (
+        <div className="bg-red-600 text-white text-center py-2.5 px-4 text-sm flex items-center justify-center gap-3 flex-wrap">
+          <span>{publishError}</span>
+          {publishError.toLowerCase().includes("sign") ? (
+            <a
+              href={`/signup?redirect_url=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/")}`}
+              className="underline font-semibold hover:text-red-100 whitespace-nowrap"
+            >
+              Sign up free →
+            </a>
+          ) : publishError.toLowerCase().includes("expired") ? (
+            <a href="/build" className="underline font-semibold hover:text-red-100 whitespace-nowrap">
+              Build again →
+            </a>
+          ) : (
+            <button onClick={() => setPublishError("")} className="underline font-semibold hover:text-red-100 whitespace-nowrap">
+              Dismiss
+            </button>
+          )}
+        </div>
+      )}
 
       {published && publishedUrl && (
         <div className="bg-green-600 text-white text-center py-3 px-4">
