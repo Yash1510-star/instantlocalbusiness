@@ -727,181 +727,469 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   phone: <span className="text-lg">📞</span>,
 };
 
-function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
-  const cs = site.colorScheme;
-  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white") || cs.heroBg === "bg-white";
-  const isDark = !isLight;
-
-  const textBase = isDark ? "text-white" : "text-gray-900";
-  const textMuted = isDark ? "text-gray-400" : "text-gray-500";
-  const sectionBg = isDark ? "bg-gray-900" : "bg-white";
-  const altBg = isDark ? "bg-gray-800" : "bg-gray-50";
-  const borderColor = isDark ? "border-gray-700" : "border-gray-100";
+// ─── Shared nav used by all layout renderers ────────────────────────────────
+function SiteNav({ site, cs, isLight, compact }: {
+  site: GeneratedSite; cs: GeneratedSite["colorScheme"]; isLight: boolean; compact: boolean;
+}) {
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const navText = isLight ? "text-gray-600 hover:text-gray-900" : "text-gray-300 hover:text-white";
-
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  const businessName = site.heroHeadline.split(":")[0] || "Business";
   return (
-    <div className={`font-sans ${sectionBg} ${textBase}`}>
-
-      {/* ── Nav ── */}
-      <nav className={`flex items-center justify-between px-6 py-4 border-b ${borderColor} ${isLight ? "bg-white/95" : cs.navBg} backdrop-blur-sm sticky top-0 z-10`}>
-        <div>
-          <span className={`font-extrabold text-base ${isLight ? "text-gray-900" : "text-white"}`}>{site.heroHeadline.split(":")[0] || "Business"}</span>
-          <p className={`text-xs mt-0.5 ${textMuted}`}>{site.tagline}</p>
-        </div>
-        {!compact && (
-          <div className={`flex items-center gap-6 text-sm font-medium`}>
-            {[{label:"About", id:"about"},{label:"Services", id:"services"},{label:"Contact", id:"contact"}].map(({label, id}) => (
-              <button key={id} onClick={() => scrollTo(id)} className={`transition-colors ${navText}`}>{label}</button>
-            ))}
-          </div>
-        )}
-        <button className={`text-xs font-semibold px-4 py-2 rounded-lg ${cs.primary} ${cs.primaryHover} ${cs.primaryText} transition-colors`}>
-          {compact ? "Call Now" : site.primaryCta}
-        </button>
-      </nav>
-
-      {/* ── Hero ── */}
-      <div className="relative">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={unsplash(site.heroPhoto, 1200, 600)}
-          alt="hero"
-          className="w-full object-cover"
-          style={{ height: compact ? 280 : 460 }}
-        />
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <div className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4 ${cs.badge} backdrop-blur-sm`}>
-            {site.heroBadge}
-          </div>
-          <h1 className="text-2xl font-extrabold text-white leading-tight mb-3 drop-shadow-md max-w-2xl">
-            {site.heroHeadline}
-          </h1>
-          <p className="text-sm text-white/85 max-w-lg leading-relaxed mb-6 drop-shadow-sm">
-            {site.heroSubheadline}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button className={`font-semibold px-6 py-3 rounded-xl text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover} transition-colors`}>
-              {site.primaryCta}
-            </button>
-            <button className="font-semibold px-6 py-3 rounded-xl text-sm border border-white/50 text-white hover:bg-white/10 transition-colors">
-              {site.secondaryCta}
-            </button>
-          </div>
-        </div>
+    <nav className={`flex items-center justify-between px-6 py-4 border-b ${isLight ? "border-gray-100 bg-white/95" : "border-white/10 " + cs.navBg} backdrop-blur-sm sticky top-0 z-10`}>
+      <div>
+        <span className={`font-extrabold text-base ${isLight ? "text-gray-900" : "text-white"}`}>{businessName}</span>
+        <p className={`text-xs mt-0.5 ${isLight ? "text-gray-400" : "text-gray-400"}`}>{site.tagline}</p>
       </div>
-
-      {/* ── Trust strip ── */}
-      {site.trustPoints?.length > 0 && (
-        <div className={`${cs.primary} ${cs.primaryText} py-3 px-6`}>
-          <div className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs font-semibold`}>
-            {site.trustPoints.map((p) => (
-              <span key={p} className="flex items-center gap-1.5">
-                <CheckCircle2 size={12} /> {p}
-              </span>
-            ))}
-          </div>
+      {!compact && (
+        <div className="flex items-center gap-6 text-sm font-medium">
+          {[{label:"About",id:"about"},{label:"Services",id:"services"},{label:"Contact",id:"contact"}].map(({label,id}) => (
+            <button key={id} onClick={() => scrollTo(id)} className={`transition-colors ${navText}`}>{label}</button>
+          ))}
         </div>
       )}
+      <button className={`text-xs font-semibold px-4 py-2 rounded-lg ${cs.primary} ${cs.primaryHover} ${cs.primaryText} transition-colors`}>
+        {compact ? "Call" : site.primaryCta}
+      </button>
+    </nav>
+  );
+}
 
-      {/* ── Stats ── */}
-      <div className={`grid grid-cols-3 divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
-        {site.stats.map((s) => (
-          <div key={s.label} className="px-4 py-5 text-center">
-            <div className={`text-xl font-extrabold ${cs.accent}`}>{s.value}</div>
-            <div className={`text-xs mt-0.5 ${textMuted}`}>{s.label}</div>
+// ─── HOSPITALITY layout (Restaurants, Cafes, Bakeries, Bars) ────────────────
+// Full-bleed food photography, menu-card services, warm atmosphere
+function HospitalityLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
+  return (
+    <div className="font-sans bg-gray-950 text-white">
+      <SiteNav site={site} cs={cs} isLight={false} compact={compact} />
+
+      {/* Split hero: full photo left, bold text right */}
+      <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} min-h-[420px]`}>
+        <div className="relative" style={{ minHeight: compact ? 260 : 420 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={unsplash(site.heroPhoto, 800, 600)} alt="hero" className="w-full h-full object-cover absolute inset-0" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-950/80" />
+        </div>
+        <div className="flex flex-col justify-center px-8 py-10 bg-gray-950">
+          <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-5 ${cs.badge} w-fit`}>{site.heroBadge}</span>
+          <h1 className="text-3xl font-extrabold text-white leading-tight mb-4">{site.heroHeadline}</h1>
+          <p className="text-sm text-gray-300 leading-relaxed mb-6">{site.heroSubheadline}</p>
+          <div className="flex gap-3 flex-wrap">
+            <button className={`font-bold px-6 py-3 rounded-xl text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
+            <button className="font-semibold px-6 py-3 rounded-xl text-sm border border-white/20 text-white/80 hover:border-white/40">{site.secondaryCta}</button>
           </div>
-        ))}
+          {/* Stats inline */}
+          <div className="flex gap-6 mt-8">
+            {site.stats.map(s => (
+              <div key={s.label}>
+                <div className={`text-xl font-extrabold ${cs.accent}`}>{s.value}</div>
+                <div className="text-xs text-gray-400">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* ── Services ── */}
-      <div id="services" className={`px-6 py-14 ${sectionBg}`}>
-        <h2 className={`text-xl font-bold text-center mb-2 ${textBase}`}>Our Services</h2>
-        <p className={`text-sm text-center mb-8 ${textMuted}`}>{site.aboutTitle}</p>
-        <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+      {/* Trust ticker */}
+      <div className={`${cs.primary} ${cs.primaryText} py-2 px-6 flex items-center justify-center gap-6 text-xs font-bold flex-wrap`}>
+        {site.trustPoints.map(p => <span key={p} className="flex items-center gap-1"><CheckCircle2 size={11}/> {p}</span>)}
+      </div>
+
+      {/* Menu-style service grid */}
+      <div id="services" className="px-6 py-12 bg-gray-900">
+        <h2 className="text-2xl font-extrabold text-white text-center mb-2">Our Menu</h2>
+        <p className="text-sm text-gray-400 text-center mb-8">{site.aboutTitle}</p>
+        <div className={`grid gap-4 ${compact ? "grid-cols-1" : "grid-cols-2"}`}>
           {site.services.map((s, i) => (
-            <div key={s.title} className={`rounded-xl overflow-hidden border ${borderColor}`}>
-              <div className="relative h-32 overflow-hidden">
+            <div key={s.title} className="flex gap-4 bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 400, 200)}
-                  alt={s.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/20" />
-                {s.icon && (
-                  <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1">
-                    {ICON_MAP[s.icon] ?? null}
-                  </div>
-                )}
+                <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 160, 160)} alt={s.title} className="w-full h-full object-cover" />
               </div>
-              <div className={`p-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className={`font-semibold text-sm mb-1 ${textBase}`}>{s.title}</h3>
-                <p className={`text-xs leading-relaxed ${textMuted}`}>{s.description}</p>
+              <div>
+                <h3 className="font-bold text-sm text-white mb-1">{s.title}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed">{s.description}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── About ── */}
-      <div id="about" className={`px-8 py-12 ${altBg} text-center`}>
-        <h2 className={`text-lg font-bold mb-3 ${textBase}`}>{site.aboutTitle}</h2>
-        <p className={`text-sm leading-relaxed max-w-2xl mx-auto ${textMuted}`}>{site.aboutBody}</p>
+      {/* About — atmospheric quote style */}
+      <div id="about" className="relative py-16 px-8 text-center overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={unsplash(site.servicePhotos[2] ?? site.heroPhoto, 1200, 400)} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/75" />
+        <div className="relative max-w-2xl mx-auto">
+          <p className={`text-4xl font-serif mb-4 ${cs.accent}`}>&ldquo;</p>
+          <h2 className="text-xl font-bold text-white mb-3">{site.aboutTitle}</h2>
+          <p className="text-sm text-gray-300 leading-relaxed">{site.aboutBody}</p>
+        </div>
       </div>
 
-      {/* ── Contact strip ── */}
-      <div id="contact" className={`grid ${compact ? "grid-cols-1" : "sm:grid-cols-3"} divide-y sm:divide-y-0 sm:divide-x ${isDark ? "divide-gray-700" : "divide-gray-100"} ${altBg}`}>
-        {[
-          { icon: Phone, label: "Phone", value: site.phone },
-          { icon: MapPin, label: "Address", value: site.address },
-          { icon: Clock, label: "Hours", value: site.hours },
-        ].map(({ icon: Icon, label, value }) => (
+      {/* Contact + Hours */}
+      <div id="contact" className={`grid ${compact ? "grid-cols-1" : "grid-cols-3"} bg-gray-900 divide-y md:divide-y-0 md:divide-x divide-gray-700`}>
+        {[{icon:Phone,label:"Reservations",value:site.phone},{icon:MapPin,label:"Find Us",value:site.address},{icon:Clock,label:"Hours",value:site.hours}].map(({icon:Icon,label,value}) => (
           <div key={label} className="flex items-start gap-3 px-6 py-5">
-            <Icon size={16} className={`mt-0.5 flex-shrink-0 ${cs.accent}`} />
-            <div>
-              <p className={`text-xs font-semibold ${textBase}`}>{label}</p>
-              <p className={`text-xs mt-0.5 ${textMuted}`}>{value}</p>
-            </div>
+            <Icon size={16} className={`mt-0.5 shrink-0 ${cs.accent}`}/>
+            <div><p className="text-xs font-bold text-white">{label}</p><p className="text-xs text-gray-400 mt-0.5">{value}</p></div>
           </div>
         ))}
       </div>
 
-      {/* ── CTA ── */}
+      {/* CTA — booking form */}
+      <div className={`px-8 py-12 ${cs.primary} text-center`}>
+        <h2 className={`text-xl font-extrabold mb-2 ${cs.primaryText}`}>{site.ctaHeading}</h2>
+        <p className={`text-sm mb-6 opacity-80 ${cs.primaryText}`}>{site.ctaBody}</p>
+        <div className="max-w-sm mx-auto space-y-3">
+          <input placeholder="Your name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+          <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+          <button className="w-full font-bold py-3 rounded-lg text-sm bg-gray-900 text-white hover:bg-gray-800">{site.ctaButtonLabel}</button>
+        </div>
+      </div>
+
+      <div className="px-6 py-6 bg-gray-950 text-center text-xs text-gray-600">
+        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. <span className="text-gray-700">· Powered by InstantLocalBusiness.com</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── SERVICE layout (Plumbers, Electricians, Auto, Cleaning) ────────────────
+// Huge phone number, emergency badge, trust-forward, quote form prominent
+function ServiceLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
+  return (
+    <div className="font-sans bg-white text-gray-900">
+      {/* Emergency top bar */}
+      <div className={`${cs.primary} ${cs.primaryText} py-2 px-6 flex items-center justify-center gap-4 text-xs font-bold`}>
+        <Phone size={12}/> <span>Call Now: {site.phone}</span>
+        <span className="hidden sm:block">·</span>
+        <span className="hidden sm:block">{site.trustPoints[0]}</span>
+      </div>
+      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
+
+      {/* Hero with huge CTA */}
       <div className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={unsplash(site.heroPhoto, 1200, 500)}
-          alt="cta background"
-          className="w-full object-cover"
-          style={{ height: compact ? 500 : 440 }}
-        />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 py-12 text-center">
-          <h2 className="text-xl font-bold text-white mb-2">{site.ctaHeading}</h2>
-          <p className="text-sm text-white/80 mb-6 max-w-md">{site.ctaBody}</p>
-          <div className="w-full max-w-md bg-white rounded-xl p-5 text-left space-y-3">
-            <input placeholder="Your name" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
-            <input placeholder="Phone or email" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
-            <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50" readOnly />
-            <button className={`w-full font-semibold py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover} transition-colors`}>
-              {site.ctaButtonLabel}
-            </button>
+        <img src={unsplash(site.heroPhoto, 1200, 520)} alt="hero" className="w-full object-cover" style={{height: compact ? 260 : 420}}/>
+        <div className="absolute inset-0 bg-black/65"/>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-4 ${cs.badge}`}>{site.heroBadge}</span>
+          <h1 className="text-3xl font-extrabold text-white mb-3 leading-tight">{site.heroHeadline}</h1>
+          <p className="text-sm text-white/80 mb-6 max-w-lg">{site.heroSubheadline}</p>
+          {/* Big phone CTA */}
+          <div className={`inline-flex items-center gap-3 ${cs.primary} ${cs.primaryText} font-extrabold text-xl px-8 py-4 rounded-2xl mb-3`}>
+            <Phone size={20}/> {site.phone}
+          </div>
+          <p className="text-xs text-white/60">{site.secondaryCta} — Free estimates</p>
+        </div>
+      </div>
+
+      {/* Trust badges row */}
+      <div className="bg-gray-900 py-4 px-6">
+        <div className="flex flex-wrap items-center justify-center gap-6">
+          {site.trustPoints.map(p => (
+            <div key={p} className="flex items-center gap-2 text-xs font-semibold text-white">
+              <CheckCircle2 size={14} className={cs.accent}/> {p}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 border-b border-gray-100">
+        {site.stats.map(s => (
+          <div key={s.label} className="py-6 text-center border-r last:border-r-0 border-gray-100">
+            <div className={`text-2xl font-extrabold ${cs.accent}`}>{s.value}</div>
+            <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Services — list with icons */}
+      <div id="services" className="px-6 py-12 bg-gray-50">
+        <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">Our Services</h2>
+        <p className="text-sm text-gray-500 text-center mb-8">{site.aboutTitle}</p>
+        <div className={`grid gap-4 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+          {site.services.map((s, i) => (
+            <div key={s.title} className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-200 hover:shadow-sm transition-all">
+              <div className="flex items-start gap-4">
+                <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 100, 100)} alt={s.title} className="w-full h-full object-cover"/>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    {ICON_MAP[s.icon ?? ""] ?? null}
+                    <h3 className="font-bold text-sm text-gray-900">{s.title}</h3>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* About + quote form side by side */}
+      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-0`}>
+        <div className="px-8 py-12 bg-gray-900 text-white">
+          <h2 className="text-xl font-extrabold mb-4 text-white">{site.aboutTitle}</h2>
+          <p className="text-sm text-gray-300 leading-relaxed mb-6">{site.aboutBody}</p>
+          <div id="contact" className="space-y-3">
+            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
+              <div key={v} className="flex items-center gap-2 text-sm text-gray-300">
+                <Icon size={14} className={cs.accent}/> {v}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={`px-8 py-12 ${cs.primary}`}>
+          <h3 className={`text-lg font-extrabold mb-4 ${cs.primaryText}`}>{site.ctaHeading}</h3>
+          <p className={`text-xs mb-5 opacity-80 ${cs.primaryText}`}>{site.ctaBody}</p>
+          <div className="space-y-3">
+            <input placeholder="Your name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+            <input placeholder="Phone number" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+            <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+            <button className="w-full font-bold py-3 rounded-lg text-sm bg-gray-900 text-white">{site.ctaButtonLabel}</button>
           </div>
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <div className="px-6 py-8 text-center text-xs bg-gray-950 text-gray-500">
-        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved.
-        <span className="ml-2 text-gray-700">Powered by InstantLocalBusiness.com</span>
+      <div className="px-6 py-5 bg-gray-900 text-center text-xs text-gray-500">
+        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
       </div>
     </div>
   );
+}
+
+// ─── WELLNESS layout (Salons, Dental, Gym, Spa, Pet Grooming) ────────────────
+// Clean white, calming, booking-first, before/after, soft colors
+function WellnessLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
+  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white");
+  return (
+    <div className="font-sans bg-white text-gray-900">
+      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
+
+      {/* Hero — centered with soft overlay */}
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={unsplash(site.heroPhoto, 1200, 520)} alt="hero" className="w-full object-cover" style={{height: compact ? 260 : 440}}/>
+        <div className="absolute inset-0 bg-black/40"/>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4 bg-white/90 text-gray-800">{site.heroBadge}</span>
+          <h1 className="text-3xl font-extrabold text-white leading-tight mb-3 max-w-2xl">{site.heroHeadline}</h1>
+          <p className="text-sm text-white/85 mb-6 max-w-lg">{site.heroSubheadline}</p>
+          <div className="flex gap-3 flex-wrap justify-center">
+            <button className={`font-bold px-8 py-3.5 rounded-full text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
+            <button className="font-semibold px-8 py-3.5 rounded-full text-sm bg-white/20 text-white border border-white/30 hover:bg-white/30">{site.secondaryCta}</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust strip — pill badges */}
+      <div className="py-5 px-6 bg-white border-b border-gray-100 flex flex-wrap justify-center gap-3">
+        {site.trustPoints.map(p => (
+          <span key={p} className={`text-xs font-semibold px-3 py-1.5 rounded-full ${cs.badge}`}>{p}</span>
+        ))}
+      </div>
+
+      {/* Stats — card row */}
+      <div className={`grid grid-cols-3 gap-4 px-6 py-8 bg-gray-50`}>
+        {site.stats.map(s => (
+          <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
+            <div className={`text-2xl font-extrabold ${cs.accent}`}>{s.value}</div>
+            <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Services — portrait cards, booking focused */}
+      <div id="services" className="px-6 py-10">
+        <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">What We Offer</h2>
+        <p className="text-sm text-gray-500 text-center mb-8">{site.aboutTitle}</p>
+        <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+          {site.services.map((s, i) => (
+            <div key={s.title} className="group rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="relative h-40 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 400, 240)} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+              </div>
+              <div className="p-4">
+                <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed mb-3">{s.description}</p>
+                <button className={`text-xs font-semibold px-3 py-1.5 rounded-full ${cs.badge}`}>Book Now →</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* About — split with photo */}
+      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-gray-50`}>
+        <div className="relative" style={{minHeight: 280}}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={unsplash(site.servicePhotos[1] ?? site.heroPhoto, 600, 400)} alt="about" className="absolute inset-0 w-full h-full object-cover"/>
+        </div>
+        <div className="px-8 py-10 flex flex-col justify-center">
+          <h2 className="text-xl font-extrabold text-gray-900 mb-4">{site.aboutTitle}</h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-6">{site.aboutBody}</p>
+          <div id="contact" className="space-y-2">
+            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
+              <div key={v} className="flex items-center gap-2 text-sm text-gray-500">
+                <Icon size={14} className={cs.accent}/> {v}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA — booking banner */}
+      <div className={`px-8 py-12 text-center ${cs.primary}`}>
+        <h2 className={`text-xl font-extrabold mb-2 ${cs.primaryText}`}>{site.ctaHeading}</h2>
+        <p className={`text-sm opacity-80 mb-6 ${cs.primaryText}`}>{site.ctaBody}</p>
+        <div className="max-w-sm mx-auto flex gap-3">
+          <input placeholder="Your name or number" className="flex-1 px-4 py-3 rounded-xl text-sm text-gray-800 bg-white" readOnly/>
+          <button className="font-bold px-5 py-3 rounded-xl text-sm bg-white text-gray-900 hover:bg-gray-100 whitespace-nowrap">{site.ctaButtonLabel}</button>
+        </div>
+      </div>
+
+      <div className="px-6 py-5 bg-gray-900 text-center text-xs text-gray-500">
+        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
+      </div>
+    </div>
+  );
+}
+
+// ─── PROFESSIONAL layout (Law, Accounting, Real Estate, Photography) ─────────
+// Clean white with dark navy accents, authority-forward, minimal, credential-heavy
+function ProfessionalLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
+  return (
+    <div className="font-sans bg-white text-gray-900">
+      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
+
+      {/* Hero — text-dominant, photo as accent */}
+      <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-5"} min-h-[380px]`}>
+        <div className="col-span-3 flex flex-col justify-center px-10 py-14 bg-slate-900">
+          <span className="inline-block text-xs font-semibold px-3 py-1 rounded bg-slate-700 text-slate-300 mb-6 w-fit">{site.heroBadge}</span>
+          <h1 className="text-3xl font-extrabold text-white leading-tight mb-4">{site.heroHeadline}</h1>
+          <p className="text-sm text-slate-300 leading-relaxed mb-8">{site.heroSubheadline}</p>
+          <div className="flex gap-3 flex-wrap">
+            <button className={`font-bold px-6 py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
+            <button className="font-semibold px-6 py-3 rounded-lg text-sm border border-slate-600 text-slate-300 hover:border-slate-400">{site.secondaryCta}</button>
+          </div>
+        </div>
+        {!compact && (
+          <div className="col-span-2 relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={unsplash(site.heroPhoto, 600, 500)} alt="hero" className="absolute inset-0 w-full h-full object-cover"/>
+            <div className="absolute inset-0 bg-slate-900/30"/>
+          </div>
+        )}
+      </div>
+
+      {/* Credential bar */}
+      <div className="bg-slate-800 py-3 px-6 flex flex-wrap justify-center gap-8">
+        {site.trustPoints.map(p => (
+          <span key={p} className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+            <CheckCircle2 size={13} className={cs.accent}/> {p}
+          </span>
+        ))}
+      </div>
+
+      {/* Stats — large numbers */}
+      <div className="grid grid-cols-3 py-10 border-b border-gray-100">
+        {site.stats.map(s => (
+          <div key={s.label} className="text-center border-r last:border-r-0 border-gray-100">
+            <div className="text-3xl font-extrabold text-slate-900">{s.value}</div>
+            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Services — clean text list with numbering */}
+      <div id="services" className="px-10 py-14">
+        <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-12`}>
+          <div>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Practice Areas</h2>
+            <p className="text-sm text-gray-500 mb-8">{site.aboutTitle}</p>
+            <div className="space-y-5">
+              {site.services.slice(0,3).map((s, i) => (
+                <div key={s.title} className="flex gap-4 items-start pb-5 border-b border-gray-100 last:border-0">
+                  <span className="text-2xl font-extrabold text-gray-100 leading-none shrink-0">{String(i+1).padStart(2,"0")}</span>
+                  <div>
+                    <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="space-y-5 mt-14">
+              {site.services.slice(3).map((s, i) => (
+                <div key={s.title} className="flex gap-4 items-start pb-5 border-b border-gray-100 last:border-0">
+                  <span className="text-2xl font-extrabold text-gray-100 leading-none shrink-0">{String(i+4).padStart(2,"0")}</span>
+                  <div>
+                    <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* About + photo */}
+      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-slate-900`}>
+        <div className="relative" style={{minHeight:280}}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={unsplash(site.servicePhotos[0] ?? site.heroPhoto, 600, 400)} alt="about" className="absolute inset-0 w-full h-full object-cover"/>
+          <div className="absolute inset-0 bg-slate-900/40"/>
+        </div>
+        <div className="px-10 py-12 flex flex-col justify-center">
+          <h2 className="text-xl font-extrabold text-white mb-4">{site.aboutTitle}</h2>
+          <p className="text-sm text-slate-300 leading-relaxed mb-6">{site.aboutBody}</p>
+          <div id="contact" className="space-y-2">
+            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
+              <div key={v} className="flex items-center gap-2 text-sm text-slate-400">
+                <Icon size={14} className="text-slate-300"/> {v}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA — consultation form */}
+      <div className="px-8 py-14 bg-white text-center">
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{site.ctaHeading}</h2>
+        <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">{site.ctaBody}</p>
+        <div className="max-w-md mx-auto bg-slate-900 rounded-2xl p-6 text-left space-y-3">
+          <input placeholder="Full name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+          <input placeholder="Email or phone" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+          <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
+          <button className={`w-full font-bold py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText}`}>{site.ctaButtonLabel}</button>
+        </div>
+      </div>
+
+      <div className="px-6 py-5 bg-slate-900 text-center text-xs text-slate-500">
+        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
+      </div>
+    </div>
+  );
+}
+
+// ─── Main dispatcher ─────────────────────────────────────────────────────────
+function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
+  const cs = site.colorScheme;
+  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white") || cs.heroBg === "bg-white";
+
+  switch (site.layout) {
+    case "hospitality":  return <HospitalityLayout site={site} cs={cs} compact={compact} />;
+    case "service":      return <ServiceLayout site={site} cs={cs} compact={compact} />;
+    case "wellness":     return <WellnessLayout site={site} cs={cs} compact={compact} />;
+    case "professional": return <ProfessionalLayout site={site} cs={cs} compact={compact} />;
+    default:             return <WellnessLayout site={site} cs={cs} compact={compact} />;
+  }
 }
 
 // ─── Static template MockWebsite (used for demo/examples pages) ──────────────
