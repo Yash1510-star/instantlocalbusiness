@@ -35,13 +35,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Generate a clean, unique slug
-    let slug = generateSlug(body.businessName, body.city ?? "");
-    const existing = await getSite(slug);
-    if (existing) {
-      // Append timestamp suffix to avoid collision
-      slug = `${slug}-${Date.now().toString(36)}`;
-    }
+    // generateSlug already includes a unique timestamp suffix
+    const slug = generateSlug(body.businessName, body.city ?? "");
 
     const savedSite: SavedSite = {
       slug,
@@ -55,6 +50,7 @@ export async function POST(req: NextRequest) {
     };
 
     await saveSite(savedSite);
+    console.log(`[publish] Saved site slug="${slug}" kvReady=${!!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)}`);
 
     // Send confirmation email if Resend is configured
     if (process.env.RESEND_API_KEY) {
