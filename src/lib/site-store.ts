@@ -1,16 +1,17 @@
 /**
- * Simple persistent site store.
+ * Persistent site store.
  *
- * Dev: saves to /data/sites.json on disk (works on local Mac)
- * Production: uses Vercel KV (Redis) when KV_REST_API_URL is set
+ * Dev  : saves to /data/sites.json on disk
+ * Prod : uses Upstash Redis via REST API (set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN)
  *
  * Each saved site has:
- *   - slug: URL-safe identifier (e.g. "marios-pizza-austin")
- *   - publishedAt: ISO timestamp
- *   - businessEmail: for sending confirmation
- *   - site: full GeneratedSite object
- *   - plan: starter | pro | business
- *   - status: live | draft | suspended
+ *   - slug        : URL-safe identifier (e.g. "marios-pizza-austin-1234567890")
+ *   - publishedAt : ISO timestamp
+ *   - businessEmail / businessName
+ *   - userId      : Clerk user ID (optional — guests can publish too)
+ *   - plan        : starter | pro | business
+ *   - status      : live | draft | suspended
+ *   - site        : full GeneratedSite object
  */
 
 import type { GeneratedSite } from "./generate-site";
@@ -20,16 +21,83 @@ export type SavedSite = {
   publishedAt: string;
   businessEmail: string;
   businessName: string;
-  userId?: string; // Clerk user ID — set when user is signed in at publish time
+  userId?: string;
   plan: "starter" | "pro" | "business";
   status: "live" | "draft" | "suspended";
   site: GeneratedSite;
 };
 
-// ─── File store ───────────────────────────────────────────────────────────────
+// ─── Upstash Redis helpers ────────────────────────────────────────────────────
+
+function kvBase() {
+  return process.env.UPSTASH_REDIS_REST_URL;
+}
+function kvToken() {
+  return process.env.UPSTASH_REDIS_REST_TOKEN;
+}
+function kvReady() {
+  return !!(kvBase() && kvToken());
+}
+
+async function kvGet(key: string): Promise<SavedSite | null> {
+  const res = await fetch(`${kvBase()}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${kvToken()}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const json = await res.json() as { result: string | null };
+  if (!json.result) return null;
+  try {
+    return JSON.parse(json.result) as SavedSite;
+  } catch {
+    return null;
+  }
+}
+
+async function kvSet(key: string, value: SavedSite): Promise<void> {
+  await fetch(`${kvBase()}/set/${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${kvToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(JSON.stringify(value)),
+  });
+}
+
+// Store a secondary index: "user:<userId>" → array of slugs
+async function kvGetUserSlugs(userId: string): Promise<string[]> {
+  const res = await fetch(`${kvBase()}/get/${encodeURIComponent(`user:${userId}`)}`, {
+    headers: { Authorization: `Bearer ${kvToken()}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  const json = await res.json() as { result: string | null };
+  if (!json.result) return [];
+  try {
+    return JSON.parse(json.result) as string[];
+  } catch {
+    return [];
+  }
+}
+
+async function kvAppendUserSlug(userId: string, slug: string): Promise<void> {
+  const existing = await kvGetUserSlugs(userId);
+  if (!existing.includes(slug)) {
+    await fetch(`${kvBase()}/set/${encodeURIComponent(`user:${userId}`)}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${kvToken()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(JSON.stringify([...existing, slug])),
+    });
+  }
+}
+
+// ─── File store (dev only) ────────────────────────────────────────────────────
 
 async function fileGetAll(): Promise<Record<string, SavedSite>> {
-  if (process.env.NODE_ENV === "production") return {};
   const { readFile } = await import("fs/promises");
   const path = await import("path");
   const filePath = path.join(process.cwd(), "data", "sites.json");
@@ -42,19 +110,11 @@ async function fileGetAll(): Promise<Record<string, SavedSite>> {
 }
 
 async function fileGet(slug: string): Promise<SavedSite | null> {
-  if (process.env.NODE_ENV === "production") return null;
   const all = await fileGetAll();
   return all[slug] ?? null;
 }
 
 async function fileSet(slug: string, data: SavedSite): Promise<void> {
-  // Vercel and most serverless platforms have a read-only filesystem.
-  // Skip file writes in production — use Vercel KV instead (set KV env vars).
-  if (process.env.NODE_ENV === "production") {
-    console.log(`[site-store] Production: skipping file write for slug "${slug}". Configure Vercel KV for persistence.`);
-    return;
-  }
-
   const { readFile, writeFile, mkdir } = await import("fs/promises");
   const path = await import("path");
   const dir = path.join(process.cwd(), "data");
@@ -67,7 +127,7 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
     const raw = await readFile(filePath, "utf-8");
     all = JSON.parse(raw);
   } catch {
-    // file doesn't exist yet — start fresh
+    // file doesn't exist yet
   }
 
   all[slug] = data;
@@ -77,14 +137,25 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function getSite(slug: string): Promise<SavedSite | null> {
+  if (kvReady()) return kvGet(`site:${slug}`);
   return fileGet(slug);
 }
 
 export async function saveSite(data: SavedSite): Promise<void> {
+  if (kvReady()) {
+    await kvSet(`site:${data.slug}`, data);
+    if (data.userId) await kvAppendUserSlug(data.userId, data.slug);
+    return;
+  }
   return fileSet(data.slug, data);
 }
 
 export async function getSitesByUser(userId: string): Promise<SavedSite[]> {
+  if (kvReady()) {
+    const slugs = await kvGetUserSlugs(userId);
+    const results = await Promise.all(slugs.map((s) => kvGet(`site:${s}`)));
+    return results.filter((s): s is SavedSite => s !== null);
+  }
   const all = await fileGetAll();
   return Object.values(all).filter((s) => s.userId === userId);
 }
@@ -95,5 +166,6 @@ export function generateSlug(businessName: string, city: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 60);
-  return base;
+  const suffix = Date.now().toString().slice(-10);
+  return `${base}-${suffix}`;
 }
