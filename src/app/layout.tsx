@@ -62,9 +62,6 @@ export const metadata: Metadata = {
     images: [`${SITE_URL}/og-image.png`],
     creator: "@instantlocalbiz",
   },
-  alternates: {
-    canonical: SITE_URL,
-  },
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Build Your Website — InstantLocalBusiness.com",
   description: "Create your local business website in under 60 seconds.",
+  alternates: { canonical: "/build" },
 };
 
 export default function BuildPage() {

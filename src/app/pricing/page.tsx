@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing — InstantLocalBusiness.com",
   description: "Simple, transparent pricing. Start free. Upgrade when you're ready.",
+  alternates: { canonical: "/pricing" },
 };
 
 const plans = [

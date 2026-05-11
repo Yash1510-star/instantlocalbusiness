@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Help Center",
-  description: "Find answers to common questions about InstantLocalBusiness.com.",
+  description: "Find answers to common questions about InstantLocalBusiness.com — getting started, pricing, custom domains, and editing your site.",
+  alternates: { canonical: "/help" },
 };
 
 const faqs = [
@@ -43,9 +44,25 @@ const faqs = [
   },
 ];
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.flatMap((section) =>
+    section.items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    }))
+  ),
+};
+
 export default function HelpPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Help Center</h1>
         <p className="mt-4 text-lg text-gray-500">

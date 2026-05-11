@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "InstantLocalBusiness.com is on a mission to put every local business online — beautifully, affordably, and instantly.",
+  alternates: { canonical: "/about" },
 };
 
 const values = [

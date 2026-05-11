@@ -127,9 +127,60 @@ const pricingPlans = [
   },
 ];
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://instantlocalbusiness.com/#organization",
+      name: "InstantLocalBusiness.com",
+      url: "https://instantlocalbusiness.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://instantlocalbusiness.com/og-image.png",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "hello@instantlocalbusiness.com",
+        contactType: "customer support",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://instantlocalbusiness.com/#website",
+      url: "https://instantlocalbusiness.com",
+      name: "InstantLocalBusiness.com",
+      description: "AI-powered website builder for local businesses. Get a professional website in under 60 seconds.",
+      publisher: { "@id": "https://instantlocalbusiness.com/#organization" },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://instantlocalbusiness.com/build?q={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "InstantLocalBusiness.com",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free plan available. No credit card required.",
+      },
+      url: "https://instantlocalbusiness.com",
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div style={{ background: "#0a0a0f", color: "#f0f0ff" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 sm:px-6 lg:px-8 pt-24 pb-32">

@@ -9,6 +9,7 @@ function unsplash(id: string, w: number, h: number) {
 export const metadata: Metadata = {
   title: "Website Examples — InstantLocalBusiness.com",
   description: "See real websites built with InstantLocalBusiness.com for local businesses.",
+  alternates: { canonical: "/examples" },
 };
 
 const examples = [
