@@ -82,8 +82,8 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" style={{ colorScheme: "light", background: "#ffffff" }}>
-        <body className="antialiased" style={{ background: "#ffffff", color: "#111827" }}>
+      <html lang="en" style={{ colorScheme: "light", background: "#ffffff" }} suppressHydrationWarning>
+        <body className="antialiased" style={{ background: "#ffffff", color: "#111827" }} suppressHydrationWarning>
           <Nav />
           <main>{children}</main>
           <Footer />
