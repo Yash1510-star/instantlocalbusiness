@@ -161,9 +161,9 @@ export default function Home() {
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
-            Don&apos;t get left behind
+            Your local business,
             <br />
-            <span className="text-blue-600">in the AI world.</span>
+            <span className="text-blue-600">online instantly.</span>
           </h1>
 
           <p className="mt-6 text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
