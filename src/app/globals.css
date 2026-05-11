@@ -17,10 +17,28 @@ html {
   background: rgba(99, 102, 241, 0.06) !important;
 }
 
-/* Footer link hover */
-.footer-link {
-  color: #475569;
-}
-.footer-link:hover {
+/* Footer links */
+.footer-link { color: #475569; }
+.footer-link:hover { color: #94a3b8; }
+
+/* Nav links */
+.nav-link { color: #94a3b8; }
+.nav-link:hover { color: #e2e8f0; }
+
+/* Nav ghost button */
+.nav-link-ghost {
   color: #94a3b8;
+  border-color: rgba(255,255,255,0.12);
+}
+.nav-link-ghost:hover { color: #e2e8f0; }
+
+/* Nav primary button */
+.nav-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(99,102,241,0.35);
+}
+.nav-btn-primary:hover {
+  box-shadow: 0 0 24px rgba(99,102,241,0.5);
+  opacity: 0.92;
 }

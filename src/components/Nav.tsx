@@ -14,21 +14,13 @@ const links = [
 const GuestButtons = ({ mobile }: { mobile?: boolean }) =>
   mobile ? (
     <>
-      <Link href="/signin" className="text-center text-sm font-medium py-2 rounded-lg border"
-        style={{ color: "#94a3b8", borderColor: "rgba(255,255,255,0.12)" }}>Sign in</Link>
-      <Link href="/build" className="text-center text-sm font-semibold py-2 rounded-lg"
-        style={{ background: "linear-gradient(135deg,#6366f1,#3b82f6)", color: "#fff" }}>Get Started Free</Link>
+      <Link href="/signin" className="nav-link-ghost text-center text-sm font-medium py-2 rounded-lg border">Sign in</Link>
+      <Link href="/build" className="nav-btn-primary text-center text-sm font-semibold py-2 rounded-lg">Get Started Free</Link>
     </>
   ) : (
     <>
-      <Link href="/signin" className="text-sm font-medium transition-colors"
-        style={{ color: "#94a3b8" }}
-        onMouseEnter={e => (e.currentTarget.style.color = "#e2e8f0")}
-        onMouseLeave={e => (e.currentTarget.style.color = "#94a3b8")}>Sign in</Link>
-      <Link href="/build" className="text-sm font-semibold px-4 py-2 rounded-lg transition-all"
-        style={{ background: "linear-gradient(135deg,#6366f1,#3b82f6)", color: "#fff", boxShadow: "0 0 16px rgba(99,102,241,0.35)" }}>
-        Get Started Free
-      </Link>
+      <Link href="/signin" className="nav-link text-sm font-medium transition-colors">Sign in</Link>
+      <Link href="/build" className="nav-btn-primary text-sm font-semibold px-4 py-2 rounded-lg">Get Started Free</Link>
     </>
   );
 
@@ -37,16 +29,14 @@ function AuthButtons({ mobile, onClose }: { mobile?: boolean; onClose?: () => vo
   if (mobile) {
     return isSignedIn ? (
       <>
-        <Link href="/dashboard" onClick={onClose} className="text-center text-sm font-medium py-2 border rounded-lg"
-          style={{ color: "#94a3b8", borderColor: "rgba(255,255,255,0.12)" }}>Dashboard</Link>
+        <Link href="/dashboard" onClick={onClose} className="nav-link-ghost text-center text-sm font-medium py-2 border rounded-lg">Dashboard</Link>
         <div className="flex justify-center"><UserButton /></div>
       </>
     ) : <GuestButtons mobile />;
   }
   return isSignedIn ? (
     <>
-      <Link href="/dashboard" className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-        style={{ color: "#94a3b8" }}>
+      <Link href="/dashboard" className="nav-link flex items-center gap-1.5 text-sm font-medium transition-colors">
         <LayoutDashboard size={15} />Dashboard
       </Link>
       <UserButton />
@@ -85,11 +75,7 @@ export function Nav() {
 
           <nav className="hidden md:flex items-center gap-8">
             {links.map((l) => (
-              <Link key={l.href} href={l.href}
-                className="text-sm font-medium transition-colors"
-                style={{ color: "#94a3b8" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#e2e8f0")}
-                onMouseLeave={e => (e.currentTarget.style.color = "#94a3b8")}>
+              <Link key={l.href} href={l.href} className="nav-link text-sm font-medium transition-colors">
                 {l.label}
               </Link>
             ))}
@@ -115,7 +101,7 @@ export function Nav() {
         }}>
           {links.map((l) => (
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-              className="block text-sm font-medium py-2" style={{ color: "#94a3b8" }}>{l.label}</Link>
+              className="nav-link block text-sm font-medium py-2">{l.label}</Link>
           ))}
           <div className="pt-2 flex flex-col gap-2">
             <ClerkBoundary mobile onClose={() => setOpen(false)}>
