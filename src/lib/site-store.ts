@@ -55,15 +55,20 @@ async function kvGet(key: string): Promise<SavedSite | null> {
 }
 
 async function kvSet(key: string, value: SavedSite): Promise<void> {
-  // Upstash REST: POST /set/<key> with raw JSON string as body
-  await fetch(`${kvBase()}/set/${encodeURIComponent(key)}`, {
+  // Use pipeline format: POST to /pipeline with ["SET", key, value]
+  // This is the most reliable way to store JSON values in Upstash REST API
+  const res = await fetch(`${kvBase()}/pipeline`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${kvToken()}`,
-      "Content-Type": "application/octet-stream",
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(value),
+    body: JSON.stringify([["SET", key, JSON.stringify(value)]]),
   });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[kvSet] Upstash error:", res.status, text);
+  }
 }
 
 // Store a secondary index: "user:<userId>" → array of slugs
@@ -85,13 +90,14 @@ async function kvGetUserSlugs(userId: string): Promise<string[]> {
 async function kvAppendUserSlug(userId: string, slug: string): Promise<void> {
   const existing = await kvGetUserSlugs(userId);
   if (!existing.includes(slug)) {
-    await fetch(`${kvBase()}/set/${encodeURIComponent(`user:${userId}`)}`, {
+    const newList = JSON.stringify([...existing, slug]);
+    await fetch(`${kvBase()}/pipeline`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${kvToken()}`,
-        "Content-Type": "application/octet-stream",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify([...existing, slug]),
+      body: JSON.stringify([["SET", `user:${userId}`, newList]]),
     });
   }
 }
