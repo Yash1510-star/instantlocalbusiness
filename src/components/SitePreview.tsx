@@ -82,14 +82,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-orange-700",
     accentButton: "bg-orange-600 hover:bg-orange-700 text-white",
     accentBadge: "bg-orange-100 text-orange-700",
-    heroPhoto: "photo-1565299585323-38d6b0865b47", // colorful tacos
+    heroPhoto: "photo-1565299585323-38d6b0865b47",
     servicePhotos: [
-      "photo-1552332386-f8dd00dc2f85", // taco close-up
-      "photo-1640719028782-8230f1bdc45e", // burrito
-      "photo-1514190051997-0f6f39ca5cde", // margarita
-      "photo-1565958011703-44f9829ba187", // family food spread
-      "photo-1498837167922-ddd27525d352", // fresh veggies
-      "photo-1504674900247-0877df9cc836", // food table
+      "photo-1552332386-f8dd00dc2f85",
+      "photo-1640719028782-8230f1bdc45e",
+      "photo-1514190051997-0f6f39ca5cde",
+      "photo-1565958011703-44f9829ba187",
+      "photo-1498837167922-ddd27525d352",
+      "photo-1504674900247-0877df9cc836",
     ],
     rating: { score: "4.9", count: "1,204 reviews" },
     highlightStats: [
@@ -127,14 +127,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-blue-700",
     accentButton: "bg-blue-600 hover:bg-blue-700 text-white",
     accentBadge: "bg-blue-100 text-blue-700",
-    heroPhoto: "photo-1585771724684-38269d6639fd", // plumber working under sink
+    heroPhoto: "photo-1585771724684-38269d6639fd",
     servicePhotos: [
-      "photo-1504328345606-18bbc8c9d7d1", // burst pipe
-      "photo-1581094794329-c8112a89af12", // water heater
-      "photo-1607472586893-edb57bdc0e39", // drain
-      "photo-1558618666-fcd25c85cd64", // pipes
-      "photo-1556909114-f6e7ad7d3136", // kitchen faucet
-      "photo-1504328345606-18bbc8c9d7d1", // sewer
+      "photo-1504328345606-18bbc8c9d7d1",
+      "photo-1581094794329-c8112a89af12",
+      "photo-1607472586893-edb57bdc0e39",
+      "photo-1558618666-fcd25c85cd64",
+      "photo-1556909114-f6e7ad7d3136",
+      "photo-1504328345606-18bbc8c9d7d1",
     ],
     rating: { score: "4.8", count: "892 reviews" },
     highlightStats: [
@@ -172,14 +172,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-pink-700",
     accentButton: "bg-pink-600 hover:bg-pink-700 text-white",
     accentBadge: "bg-pink-100 text-pink-700",
-    heroPhoto: "photo-1560066984-138dadb4c035", // salon interior with warm lighting
+    heroPhoto: "photo-1560066984-138dadb4c035",
     servicePhotos: [
-      "photo-1522337360788-8b13dee7a37e", // hair coloring
-      "photo-1595476108010-b4d1f102b1b1", // haircut
-      "photo-1527799820374-87f0aa68e2e8", // keratin treatment
-      "photo-1487412947147-5cebf100ffc2", // blowout
-      "photo-1519741497674-611481863552", // bridal hair
-      "photo-1596704017254-9b121068fb31", // conditioning treatment
+      "photo-1522337360788-8b13dee7a37e",
+      "photo-1595476108010-b4d1f102b1b1",
+      "photo-1527799820374-87f0aa68e2e8",
+      "photo-1487412947147-5cebf100ffc2",
+      "photo-1519741497674-611481863552",
+      "photo-1596704017254-9b121068fb31",
     ],
     rating: { score: "5.0", count: "2,011 reviews" },
     highlightStats: [
@@ -217,14 +217,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-yellow-800",
     accentButton: "bg-yellow-500 hover:bg-yellow-600 text-gray-900",
     accentBadge: "bg-yellow-100 text-yellow-800",
-    heroPhoto: "photo-1621905251189-08b45d6a269e", // electrician working on panel
+    heroPhoto: "photo-1621905251189-08b45d6a269e",
     servicePhotos: [
-      "photo-1558618666-fcd25c85cd64", // electrical panel
-      "photo-1593941707882-a5bba14938c7", // EV charger
-      "photo-1565008447742-97f6f38c985c", // wiring
-      "photo-1616763355548-1b606f439f86", // outlet repair
-      "photo-1565538810643-b5bdb714032a", // recessed lighting
-      "photo-1504328345606-18bbc8c9d7d1", // commercial work
+      "photo-1558618666-fcd25c85cd64",
+      "photo-1593941707882-a5bba14938c7",
+      "photo-1565008447742-97f6f38c985c",
+      "photo-1616763355548-1b606f439f86",
+      "photo-1565538810643-b5bdb714032a",
+      "photo-1504328345606-18bbc8c9d7d1",
     ],
     rating: { score: "4.9", count: "613 reviews" },
     highlightStats: [
@@ -262,14 +262,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-green-700",
     accentButton: "bg-green-600 hover:bg-green-700 text-white",
     accentBadge: "bg-green-100 text-green-700",
-    heroPhoto: "photo-1587300003388-59208cc962cb", // happy groomed golden retriever
+    heroPhoto: "photo-1587300003388-59208cc962cb",
     servicePhotos: [
-      "photo-1548199973-03cce0bbc87b", // dogs being bathed
-      "photo-1583511655857-d19b40a7a54e", // dog being groomed
-      "photo-1601758228041-f3b2795255f1", // dog nail trim
-      "photo-1477884213360-7e9d7dcc1e48", // fluffy dog after groom
-      "photo-1519052537078-e6302a4968d4", // cat grooming
-      "photo-1530281700549-e82e7bf110d6", // puppy
+      "photo-1548199973-03cce0bbc87b",
+      "photo-1583511655857-d19b40a7a54e",
+      "photo-1601758228041-f3b2795255f1",
+      "photo-1477884213360-7e9d7dcc1e48",
+      "photo-1519052537078-e6302a4968d4",
+      "photo-1530281700549-e82e7bf110d6",
     ],
     rating: { score: "4.9", count: "1,847 reviews" },
     highlightStats: [
@@ -307,14 +307,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-gray-100",
     accentButton: "bg-red-600 hover:bg-red-700 text-white",
     accentBadge: "bg-gray-700 text-gray-100",
-    heroPhoto: "photo-1625047509248-ec889cbff17f", // mechanic under car hood
+    heroPhoto: "photo-1625047509248-ec889cbff17f",
     servicePhotos: [
-      "photo-1487754180451-c456f719a1fc", // oil change
-      "photo-1558618666-fcd25c85cd64", // brakes
-      "photo-1460925895917-afdab827c52f", // car AC
-      "photo-1609630875171-b1321377ee65", // transmission
-      "photo-1476231682828-37e571bc172f", // engine check
-      "photo-1558981852-426c048eb903", // tire change
+      "photo-1487754180451-c456f719a1fc",
+      "photo-1558618666-fcd25c85cd64",
+      "photo-1460925895917-afdab827c52f",
+      "photo-1609630875171-b1321377ee65",
+      "photo-1476231682828-37e571bc172f",
+      "photo-1558981852-426c048eb903",
     ],
     rating: { score: "4.8", count: "2,390 reviews" },
     highlightStats: [
@@ -352,14 +352,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-purple-700",
     accentButton: "bg-purple-600 hover:bg-purple-700 text-white",
     accentBadge: "bg-purple-100 text-purple-700",
-    heroPhoto: "photo-1534438327276-14e5300c3a48", // modern gym interior
+    heroPhoto: "photo-1534438327276-14e5300c3a48",
     servicePhotos: [
-      "photo-1571019614242-c5c5dee9f50b", // personal training
-      "photo-1518611012118-696072aa579a", // group fitness class
-      "photo-1490645935967-10de6ba17061", // nutrition coaching / meal prep
-      "photo-1583454110551-21f2fa2afe61", // open gym weights
-      "photo-1517836357463-d25dfeac3438", // body composition / fitness
-      "photo-1573497620053-ea5300f94f21", // corporate wellness
+      "photo-1571019614242-c5c5dee9f50b",
+      "photo-1518611012118-696072aa579a",
+      "photo-1490645935967-10de6ba17061",
+      "photo-1583454110551-21f2fa2afe61",
+      "photo-1517836357463-d25dfeac3438",
+      "photo-1573497620053-ea5300f94f21",
     ],
     rating: { score: "4.9", count: "3,102 reviews" },
     highlightStats: [
@@ -398,14 +398,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-rose-700",
     accentButton: "bg-rose-500 hover:bg-rose-600 text-white",
     accentBadge: "bg-rose-100 text-rose-700",
-    heroPhoto: "photo-1487530811015-6780fb4f3df2", // beautiful colorful flower shop
+    heroPhoto: "photo-1487530811015-6780fb4f3df2",
     servicePhotos: [
-      "photo-1561181286-d3f6a14498e0", // bouquet
-      "photo-1519225421980-715cb0215aed", // wedding flowers
-      "photo-1467810563316-b5476525c0f9", // event floral installation
-      "photo-1490750967868-88df5691cc2d", // sympathy arrangement
-      "photo-1416879595882-3373a0480b5b", // potted plants
-      "photo-1558618666-fcd25c85cd64", // flower subscription
+      "photo-1561181286-d3f6a14498e0",
+      "photo-1519225421980-715cb0215aed",
+      "photo-1467810563316-b5476525c0f9",
+      "photo-1490750967868-88df5691cc2d",
+      "photo-1416879595882-3373a0480b5b",
+      "photo-1558618666-fcd25c85cd64",
     ],
     rating: { score: "4.9", count: "988 reviews" },
     highlightStats: [
@@ -444,14 +444,14 @@ const TEMPLATES: Record<string, BusinessTemplate> = {
     accentText: "text-teal-700",
     accentButton: "bg-teal-600 hover:bg-teal-700 text-white",
     accentBadge: "bg-teal-100 text-teal-700",
-    heroPhoto: "photo-1606811841689-23dfddce3e95", // bright modern dental office
+    heroPhoto: "photo-1606811841689-23dfddce3e95",
     servicePhotos: [
-      "photo-1588776814546-1ffbb20a41e1", // dental cleaning
-      "photo-1598256989706-4e17e9ce26ac", // teeth whitening
-      "photo-1609840114035-3c981b782dfe", // Invisalign
-      "photo-1584515933487-779824d29309", // dental crown
-      "photo-1559757148-5c350d0d3c56", // dental implant
-      "photo-1580489944761-15a19d654956", // emergency dental
+      "photo-1588776814546-1ffbb20a41e1",
+      "photo-1598256989706-4e17e9ce26ac",
+      "photo-1609840114035-3c981b782dfe",
+      "photo-1584515933487-779824d29309",
+      "photo-1559757148-5c350d0d3c56",
+      "photo-1580489944761-15a19d654956",
     ],
     rating: { score: "4.9", count: "1,556 reviews" },
     highlightStats: [
@@ -505,6 +505,7 @@ function buildFallbackTemplate(slug: string): BusinessTemplate {
 // ─── Preview shell ────────────────────────────────────────────────────────────
 
 import type { GeneratedSite } from "@/lib/generate-site";
+import { AISiteRenderer } from "./AISiteRenderer";
 
 export function SitePreview({ slug }: { slug: string }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
@@ -701,495 +702,10 @@ export function SitePreview({ slug }: { slug: string }) {
   );
 }
 
-// ─── Unsplash helper ─────────────────────────────────────────────────────────
+// ─── Unsplash helper (used by MockWebsite below) ──────────────────────────────
 
 function unsplash(photoId: string, w: number, h: number) {
   return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
-}
-
-// ─── Per-business rendered website ───────────────────────────────────────────
-
-// ─── AI Site Renderer ─────────────────────────────────────────────────────────
-// Renders fully AI-generated sites with industry-specific layouts
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  wrench: <span className="text-lg">🔧</span>,
-  scissors: <span className="text-lg">✂️</span>,
-  scale: <span className="text-lg">⚖️</span>,
-  heart: <span className="text-lg">❤️</span>,
-  utensils: <span className="text-lg">🍽️</span>,
-  car: <span className="text-lg">🚗</span>,
-  leaf: <span className="text-lg">🌿</span>,
-  home: <span className="text-lg">🏠</span>,
-  star: <span className="text-lg">⭐</span>,
-  shield: <span className="text-lg">🛡️</span>,
-  clock: <span className="text-lg">⏰</span>,
-  phone: <span className="text-lg">📞</span>,
-};
-
-// ─── Shared nav used by all layout renderers ────────────────────────────────
-function SiteNav({ site, cs, isLight, compact }: {
-  site: GeneratedSite; cs: GeneratedSite["colorScheme"]; isLight: boolean; compact: boolean;
-}) {
-  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  const navText = isLight ? "text-gray-600 hover:text-gray-900" : "text-gray-300 hover:text-white";
-  const businessName = site.heroHeadline.split(":")[0] || "Business";
-  return (
-    <nav className={`flex items-center justify-between px-6 py-4 border-b ${isLight ? "border-gray-100 bg-white/95" : "border-white/10 " + cs.navBg} backdrop-blur-sm sticky top-0 z-10`}>
-      <div>
-        <span className={`font-extrabold text-base ${isLight ? "text-gray-900" : "text-white"}`}>{businessName}</span>
-        <p className={`text-xs mt-0.5 ${isLight ? "text-gray-400" : "text-gray-400"}`}>{site.tagline}</p>
-      </div>
-      {!compact && (
-        <div className="flex items-center gap-6 text-sm font-medium">
-          {[{label:"About",id:"about"},{label:"Services",id:"services"},{label:"Contact",id:"contact"}].map(({label,id}) => (
-            <button key={id} onClick={() => scrollTo(id)} className={`transition-colors ${navText}`}>{label}</button>
-          ))}
-        </div>
-      )}
-      <button className={`text-xs font-semibold px-4 py-2 rounded-lg ${cs.primary} ${cs.primaryHover} ${cs.primaryText} transition-colors`}>
-        {compact ? "Call" : site.primaryCta}
-      </button>
-    </nav>
-  );
-}
-
-// ─── HOSPITALITY layout (Restaurants, Cafes, Bakeries, Bars) ────────────────
-// Full-bleed food photography, menu-card services, warm atmosphere
-function HospitalityLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
-  return (
-    <div className="font-sans bg-gray-950 text-white">
-      <SiteNav site={site} cs={cs} isLight={false} compact={compact} />
-
-      {/* Split hero: full photo left, bold text right */}
-      <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} min-h-[420px]`}>
-        <div className="relative" style={{ minHeight: compact ? 260 : 420 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={unsplash(site.heroPhoto, 800, 600)} alt="hero" className="w-full h-full object-cover absolute inset-0" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-950/80" />
-        </div>
-        <div className="flex flex-col justify-center px-8 py-10 bg-gray-950">
-          <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-5 ${cs.badge} w-fit`}>{site.heroBadge}</span>
-          <h1 className="text-3xl font-extrabold text-white leading-tight mb-4">{site.heroHeadline}</h1>
-          <p className="text-sm text-gray-300 leading-relaxed mb-6">{site.heroSubheadline}</p>
-          <div className="flex gap-3 flex-wrap">
-            <button className={`font-bold px-6 py-3 rounded-xl text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
-            <button className="font-semibold px-6 py-3 rounded-xl text-sm border border-white/20 text-white/80 hover:border-white/40">{site.secondaryCta}</button>
-          </div>
-          {/* Stats inline */}
-          <div className="flex gap-6 mt-8">
-            {site.stats.map(s => (
-              <div key={s.label}>
-                <div className={`text-xl font-extrabold ${cs.accent}`}>{s.value}</div>
-                <div className="text-xs text-gray-400">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Trust ticker */}
-      <div className={`${cs.primary} ${cs.primaryText} py-2 px-6 flex items-center justify-center gap-6 text-xs font-bold flex-wrap`}>
-        {site.trustPoints.map(p => <span key={p} className="flex items-center gap-1"><CheckCircle2 size={11}/> {p}</span>)}
-      </div>
-
-      {/* Menu-style service grid */}
-      <div id="services" className="px-6 py-12 bg-gray-900">
-        <h2 className="text-2xl font-extrabold text-white text-center mb-2">Our Menu</h2>
-        <p className="text-sm text-gray-400 text-center mb-8">{site.aboutTitle}</p>
-        <div className={`grid gap-4 ${compact ? "grid-cols-1" : "grid-cols-2"}`}>
-          {site.services.map((s, i) => (
-            <div key={s.title} className="flex gap-4 bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 160, 160)} alt={s.title} className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-white mb-1">{s.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{s.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* About — atmospheric quote style */}
-      <div id="about" className="relative py-16 px-8 text-center overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={unsplash(site.servicePhotos[2] ?? site.heroPhoto, 1200, 400)} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/75" />
-        <div className="relative max-w-2xl mx-auto">
-          <p className={`text-4xl font-serif mb-4 ${cs.accent}`}>&ldquo;</p>
-          <h2 className="text-xl font-bold text-white mb-3">{site.aboutTitle}</h2>
-          <p className="text-sm text-gray-300 leading-relaxed">{site.aboutBody}</p>
-        </div>
-      </div>
-
-      {/* Contact + Hours */}
-      <div id="contact" className={`grid ${compact ? "grid-cols-1" : "grid-cols-3"} bg-gray-900 divide-y md:divide-y-0 md:divide-x divide-gray-700`}>
-        {[{icon:Phone,label:"Reservations",value:site.phone},{icon:MapPin,label:"Find Us",value:site.address},{icon:Clock,label:"Hours",value:site.hours}].map(({icon:Icon,label,value}) => (
-          <div key={label} className="flex items-start gap-3 px-6 py-5">
-            <Icon size={16} className={`mt-0.5 shrink-0 ${cs.accent}`}/>
-            <div><p className="text-xs font-bold text-white">{label}</p><p className="text-xs text-gray-400 mt-0.5">{value}</p></div>
-          </div>
-        ))}
-      </div>
-
-      {/* CTA — booking form */}
-      <div className={`px-8 py-12 ${cs.primary} text-center`}>
-        <h2 className={`text-xl font-extrabold mb-2 ${cs.primaryText}`}>{site.ctaHeading}</h2>
-        <p className={`text-sm mb-6 opacity-80 ${cs.primaryText}`}>{site.ctaBody}</p>
-        <div className="max-w-sm mx-auto space-y-3">
-          <input placeholder="Your name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-          <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-          <button className="w-full font-bold py-3 rounded-lg text-sm bg-gray-900 text-white hover:bg-gray-800">{site.ctaButtonLabel}</button>
-        </div>
-      </div>
-
-      <div className="px-6 py-6 bg-gray-950 text-center text-xs text-gray-600">
-        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. <span className="text-gray-700">· Powered by InstantLocalBusiness.com</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── SERVICE layout (Plumbers, Electricians, Auto, Cleaning) ────────────────
-// Huge phone number, emergency badge, trust-forward, quote form prominent
-function ServiceLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
-  return (
-    <div className="font-sans bg-white text-gray-900">
-      {/* Emergency top bar */}
-      <div className={`${cs.primary} ${cs.primaryText} py-2 px-6 flex items-center justify-center gap-4 text-xs font-bold`}>
-        <Phone size={12}/> <span>Call Now: {site.phone}</span>
-        <span className="hidden sm:block">·</span>
-        <span className="hidden sm:block">{site.trustPoints[0]}</span>
-      </div>
-      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
-
-      {/* Hero with huge CTA */}
-      <div className="relative">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={unsplash(site.heroPhoto, 1200, 520)} alt="hero" className="w-full object-cover" style={{height: compact ? 260 : 420}}/>
-        <div className="absolute inset-0 bg-black/65"/>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-4 ${cs.badge}`}>{site.heroBadge}</span>
-          <h1 className="text-3xl font-extrabold text-white mb-3 leading-tight">{site.heroHeadline}</h1>
-          <p className="text-sm text-white/80 mb-6 max-w-lg">{site.heroSubheadline}</p>
-          {/* Big phone CTA */}
-          <div className={`inline-flex items-center gap-3 ${cs.primary} ${cs.primaryText} font-extrabold text-xl px-8 py-4 rounded-2xl mb-3`}>
-            <Phone size={20}/> {site.phone}
-          </div>
-          <p className="text-xs text-white/60">{site.secondaryCta} — Free estimates</p>
-        </div>
-      </div>
-
-      {/* Trust badges row */}
-      <div className="bg-gray-900 py-4 px-6">
-        <div className="flex flex-wrap items-center justify-center gap-6">
-          {site.trustPoints.map(p => (
-            <div key={p} className="flex items-center gap-2 text-xs font-semibold text-white">
-              <CheckCircle2 size={14} className={cs.accent}/> {p}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 border-b border-gray-100">
-        {site.stats.map(s => (
-          <div key={s.label} className="py-6 text-center border-r last:border-r-0 border-gray-100">
-            <div className={`text-2xl font-extrabold ${cs.accent}`}>{s.value}</div>
-            <div className="text-xs text-gray-500 mt-1">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Services — list with icons */}
-      <div id="services" className="px-6 py-12 bg-gray-50">
-        <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">Our Services</h2>
-        <p className="text-sm text-gray-500 text-center mb-8">{site.aboutTitle}</p>
-        <div className={`grid gap-4 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-          {site.services.map((s, i) => (
-            <div key={s.title} className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-200 hover:shadow-sm transition-all">
-              <div className="flex items-start gap-4">
-                <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 100, 100)} alt={s.title} className="w-full h-full object-cover"/>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    {ICON_MAP[s.icon ?? ""] ?? null}
-                    <h3 className="font-bold text-sm text-gray-900">{s.title}</h3>
-                  </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* About + quote form side by side */}
-      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-0`}>
-        <div className="px-8 py-12 bg-gray-900 text-white">
-          <h2 className="text-xl font-extrabold mb-4 text-white">{site.aboutTitle}</h2>
-          <p className="text-sm text-gray-300 leading-relaxed mb-6">{site.aboutBody}</p>
-          <div id="contact" className="space-y-3">
-            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
-              <div key={v} className="flex items-center gap-2 text-sm text-gray-300">
-                <Icon size={14} className={cs.accent}/> {v}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className={`px-8 py-12 ${cs.primary}`}>
-          <h3 className={`text-lg font-extrabold mb-4 ${cs.primaryText}`}>{site.ctaHeading}</h3>
-          <p className={`text-xs mb-5 opacity-80 ${cs.primaryText}`}>{site.ctaBody}</p>
-          <div className="space-y-3">
-            <input placeholder="Your name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-            <input placeholder="Phone number" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-            <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-            <button className="w-full font-bold py-3 rounded-lg text-sm bg-gray-900 text-white">{site.ctaButtonLabel}</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 py-5 bg-gray-900 text-center text-xs text-gray-500">
-        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
-      </div>
-    </div>
-  );
-}
-
-// ─── WELLNESS layout (Salons, Dental, Gym, Spa, Pet Grooming) ────────────────
-// Clean white, calming, booking-first, before/after, soft colors
-function WellnessLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
-  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white");
-  return (
-    <div className="font-sans bg-white text-gray-900">
-      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
-
-      {/* Hero — centered with soft overlay */}
-      <div className="relative">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={unsplash(site.heroPhoto, 1200, 520)} alt="hero" className="w-full object-cover" style={{height: compact ? 260 : 440}}/>
-        <div className="absolute inset-0 bg-black/40"/>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4 bg-white/90 text-gray-800">{site.heroBadge}</span>
-          <h1 className="text-3xl font-extrabold text-white leading-tight mb-3 max-w-2xl">{site.heroHeadline}</h1>
-          <p className="text-sm text-white/85 mb-6 max-w-lg">{site.heroSubheadline}</p>
-          <div className="flex gap-3 flex-wrap justify-center">
-            <button className={`font-bold px-8 py-3.5 rounded-full text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
-            <button className="font-semibold px-8 py-3.5 rounded-full text-sm bg-white/20 text-white border border-white/30 hover:bg-white/30">{site.secondaryCta}</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust strip — pill badges */}
-      <div className="py-5 px-6 bg-white border-b border-gray-100 flex flex-wrap justify-center gap-3">
-        {site.trustPoints.map(p => (
-          <span key={p} className={`text-xs font-semibold px-3 py-1.5 rounded-full ${cs.badge}`}>{p}</span>
-        ))}
-      </div>
-
-      {/* Stats — card row */}
-      <div className={`grid grid-cols-3 gap-4 px-6 py-8 bg-gray-50`}>
-        {site.stats.map(s => (
-          <div key={s.label} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-            <div className={`text-2xl font-extrabold ${cs.accent}`}>{s.value}</div>
-            <div className="text-xs text-gray-500 mt-1">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Services — portrait cards, booking focused */}
-      <div id="services" className="px-6 py-10">
-        <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">What We Offer</h2>
-        <p className="text-sm text-gray-500 text-center mb-8">{site.aboutTitle}</p>
-        <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-          {site.services.map((s, i) => (
-            <div key={s.title} className="group rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="relative h-40 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 400, 240)} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">{s.description}</p>
-                <button className={`text-xs font-semibold px-3 py-1.5 rounded-full ${cs.badge}`}>Book Now →</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* About — split with photo */}
-      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-gray-50`}>
-        <div className="relative" style={{minHeight: 280}}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={unsplash(site.servicePhotos[1] ?? site.heroPhoto, 600, 400)} alt="about" className="absolute inset-0 w-full h-full object-cover"/>
-        </div>
-        <div className="px-8 py-10 flex flex-col justify-center">
-          <h2 className="text-xl font-extrabold text-gray-900 mb-4">{site.aboutTitle}</h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-6">{site.aboutBody}</p>
-          <div id="contact" className="space-y-2">
-            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
-              <div key={v} className="flex items-center gap-2 text-sm text-gray-500">
-                <Icon size={14} className={cs.accent}/> {v}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CTA — booking banner */}
-      <div className={`px-8 py-12 text-center ${cs.primary}`}>
-        <h2 className={`text-xl font-extrabold mb-2 ${cs.primaryText}`}>{site.ctaHeading}</h2>
-        <p className={`text-sm opacity-80 mb-6 ${cs.primaryText}`}>{site.ctaBody}</p>
-        <div className="max-w-sm mx-auto flex gap-3">
-          <input placeholder="Your name or number" className="flex-1 px-4 py-3 rounded-xl text-sm text-gray-800 bg-white" readOnly/>
-          <button className="font-bold px-5 py-3 rounded-xl text-sm bg-white text-gray-900 hover:bg-gray-100 whitespace-nowrap">{site.ctaButtonLabel}</button>
-        </div>
-      </div>
-
-      <div className="px-6 py-5 bg-gray-900 text-center text-xs text-gray-500">
-        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
-      </div>
-    </div>
-  );
-}
-
-// ─── PROFESSIONAL layout (Law, Accounting, Real Estate, Photography) ─────────
-// Clean white with dark navy accents, authority-forward, minimal, credential-heavy
-function ProfessionalLayout({ site, cs, compact }: { site: GeneratedSite; cs: GeneratedSite["colorScheme"]; compact: boolean }) {
-  return (
-    <div className="font-sans bg-white text-gray-900">
-      <SiteNav site={site} cs={cs} isLight={true} compact={compact} />
-
-      {/* Hero — text-dominant, photo as accent */}
-      <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-5"} min-h-[380px]`}>
-        <div className="col-span-3 flex flex-col justify-center px-10 py-14 bg-slate-900">
-          <span className="inline-block text-xs font-semibold px-3 py-1 rounded bg-slate-700 text-slate-300 mb-6 w-fit">{site.heroBadge}</span>
-          <h1 className="text-3xl font-extrabold text-white leading-tight mb-4">{site.heroHeadline}</h1>
-          <p className="text-sm text-slate-300 leading-relaxed mb-8">{site.heroSubheadline}</p>
-          <div className="flex gap-3 flex-wrap">
-            <button className={`font-bold px-6 py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText} ${cs.primaryHover}`}>{site.primaryCta}</button>
-            <button className="font-semibold px-6 py-3 rounded-lg text-sm border border-slate-600 text-slate-300 hover:border-slate-400">{site.secondaryCta}</button>
-          </div>
-        </div>
-        {!compact && (
-          <div className="col-span-2 relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={unsplash(site.heroPhoto, 600, 500)} alt="hero" className="absolute inset-0 w-full h-full object-cover"/>
-            <div className="absolute inset-0 bg-slate-900/30"/>
-          </div>
-        )}
-      </div>
-
-      {/* Credential bar */}
-      <div className="bg-slate-800 py-3 px-6 flex flex-wrap justify-center gap-8">
-        {site.trustPoints.map(p => (
-          <span key={p} className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-            <CheckCircle2 size={13} className={cs.accent}/> {p}
-          </span>
-        ))}
-      </div>
-
-      {/* Stats — large numbers */}
-      <div className="grid grid-cols-3 py-10 border-b border-gray-100">
-        {site.stats.map(s => (
-          <div key={s.label} className="text-center border-r last:border-r-0 border-gray-100">
-            <div className="text-3xl font-extrabold text-slate-900">{s.value}</div>
-            <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Services — clean text list with numbering */}
-      <div id="services" className="px-10 py-14">
-        <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-12`}>
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Practice Areas</h2>
-            <p className="text-sm text-gray-500 mb-8">{site.aboutTitle}</p>
-            <div className="space-y-5">
-              {site.services.slice(0,3).map((s, i) => (
-                <div key={s.title} className="flex gap-4 items-start pb-5 border-b border-gray-100 last:border-0">
-                  <span className="text-2xl font-extrabold text-gray-100 leading-none shrink-0">{String(i+1).padStart(2,"0")}</span>
-                  <div>
-                    <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="space-y-5 mt-14">
-              {site.services.slice(3).map((s, i) => (
-                <div key={s.title} className="flex gap-4 items-start pb-5 border-b border-gray-100 last:border-0">
-                  <span className="text-2xl font-extrabold text-gray-100 leading-none shrink-0">{String(i+4).padStart(2,"0")}</span>
-                  <div>
-                    <h3 className="font-bold text-sm text-gray-900 mb-1">{s.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">{s.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* About + photo */}
-      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-slate-900`}>
-        <div className="relative" style={{minHeight:280}}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={unsplash(site.servicePhotos[0] ?? site.heroPhoto, 600, 400)} alt="about" className="absolute inset-0 w-full h-full object-cover"/>
-          <div className="absolute inset-0 bg-slate-900/40"/>
-        </div>
-        <div className="px-10 py-12 flex flex-col justify-center">
-          <h2 className="text-xl font-extrabold text-white mb-4">{site.aboutTitle}</h2>
-          <p className="text-sm text-slate-300 leading-relaxed mb-6">{site.aboutBody}</p>
-          <div id="contact" className="space-y-2">
-            {[{icon:Phone,v:site.phone},{icon:MapPin,v:site.address},{icon:Clock,v:site.hours}].map(({icon:Icon,v}) => (
-              <div key={v} className="flex items-center gap-2 text-sm text-slate-400">
-                <Icon size={14} className="text-slate-300"/> {v}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CTA — consultation form */}
-      <div className="px-8 py-14 bg-white text-center">
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{site.ctaHeading}</h2>
-        <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">{site.ctaBody}</p>
-        <div className="max-w-md mx-auto bg-slate-900 rounded-2xl p-6 text-left space-y-3">
-          <input placeholder="Full name" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-          <input placeholder="Email or phone" className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-          <input placeholder={site.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-lg text-sm text-gray-800 bg-white" readOnly />
-          <button className={`w-full font-bold py-3 rounded-lg text-sm ${cs.primary} ${cs.primaryText}`}>{site.ctaButtonLabel}</button>
-        </div>
-      </div>
-
-      <div className="px-6 py-5 bg-slate-900 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} {site.heroHeadline.split(":")[0]}. All rights reserved. · Powered by InstantLocalBusiness.com
-      </div>
-    </div>
-  );
-}
-
-// ─── Main dispatcher ─────────────────────────────────────────────────────────
-function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
-  const cs = site.colorScheme;
-  const isLight = cs.heroBg.includes("slate-50") || cs.heroBg.includes("white") || cs.heroBg === "bg-white";
-
-  switch (site.layout) {
-    case "hospitality":  return <HospitalityLayout site={site} cs={cs} compact={compact} />;
-    case "service":      return <ServiceLayout site={site} cs={cs} compact={compact} />;
-    case "wellness":     return <WellnessLayout site={site} cs={cs} compact={compact} />;
-    case "professional": return <ProfessionalLayout site={site} cs={cs} compact={compact} />;
-    default:             return <WellnessLayout site={site} cs={cs} compact={compact} />;
-  }
 }
 
 // ─── Static template MockWebsite (used for demo/examples pages) ──────────────
