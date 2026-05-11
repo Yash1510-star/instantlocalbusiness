@@ -8,6 +8,9 @@ import {
   MessageSquare,
   RefreshCw,
   CheckCircle2,
+  Heart,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 
 const features = [
@@ -154,19 +157,19 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
             <Zap size={12} />
-            Websites live in under 60 seconds
+            Built for local businesses, powered by AI
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight">
-            Your local business,
+            Don&apos;t get left behind
             <br />
-            <span className="text-blue-600">online instantly.</span>
+            <span className="text-blue-600">in the AI world.</span>
           </h1>
 
           <p className="mt-6 text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Answer a few questions about your business and our AI builds a
-            professional, SEO-ready website — fully customized, no coding, no
-            waiting. Go live today.
+            Small businesses deserve the same powerful online presence as the big guys.
+            Tell us about your business and AI builds your professional website in 60 seconds —
+            no coding, no agency, no waiting.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -201,6 +204,51 @@ export default function Home() {
                   {stat.value}
                 </div>
                 <div className="mt-1 text-sm text-gray-500">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Statement */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">Our mission</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+              We&apos;re on your side — not chasing profits.
+            </h2>
+            <p className="mt-5 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              AI is changing everything. Big corporations are using it to move faster, look better, and reach more customers.
+              We built Instant Local Business so <strong className="text-gray-700">your neighborhood bakery, plumber, or salon</strong> can
+              do the same — without hiring an agency or spending thousands of dollars.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Heart,
+                title: "Customer first, always",
+                body: "We measure success by how many local businesses grow — not by our revenue. Your wins are our wins.",
+              },
+              {
+                icon: TrendingUp,
+                title: "Grow your local presence",
+                body: "Be discoverable on Google, look professional, and compete with anyone — regardless of your budget.",
+              },
+              {
+                icon: Users,
+                title: "Built for real people",
+                body: "No tech skills needed. If you can describe your business, you can have a website live today.",
+              },
+            ].map(({ icon: Icon, title, body }) => (
+              <div key={title} className="text-center p-6 rounded-2xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-colors">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl mb-4">
+                  <Icon size={22} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{body}</p>
               </div>
             ))}
           </div>
@@ -411,10 +459,11 @@ export default function Home() {
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Your website is 60 seconds away.
+            Your local business deserves to be found.
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            No designer. No developer. No delays. Just describe your business and go live.
+            The AI world isn&apos;t slowing down — but it doesn&apos;t have to leave you behind.
+            Get online today, free, in under a minute.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
