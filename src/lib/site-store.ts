@@ -44,12 +44,24 @@ async function kvGet(key: string): Promise<SavedSite | null> {
     headers: { Authorization: `Bearer ${kvToken()}` },
     cache: "no-store",
   });
-  if (!res.ok) return null;
-  const json = await res.json() as { result: string | null };
+  if (!res.ok) {
+    console.error("[kvGet] HTTP error:", res.status, await res.text());
+    return null;
+  }
+  const json = await res.json() as { result: unknown };
   if (!json.result) return null;
   try {
-    return JSON.parse(json.result) as SavedSite;
-  } catch {
+    // result may be a string (needs parsing) or already an object
+    const raw = json.result;
+    if (typeof raw === "string") {
+      const parsed = JSON.parse(raw);
+      // Handle double-encoded: if parsed is still a string, parse again
+      if (typeof parsed === "string") return JSON.parse(parsed) as SavedSite;
+      return parsed as SavedSite;
+    }
+    return raw as SavedSite;
+  } catch (e) {
+    console.error("[kvGet] parse error:", e);
     return null;
   }
 }

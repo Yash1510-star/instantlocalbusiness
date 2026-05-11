@@ -8,14 +8,14 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const saved = await getSite(slug);
-  if (!saved) return { title: "Site Not Found" };
+  if (!saved?.site) return { title: "Site Not Found" };
 
   return {
-    title: saved.site.metaTitle,
-    description: saved.site.metaDescription,
+    title: saved.site.metaTitle ?? saved.businessName,
+    description: saved.site.metaDescription ?? "",
     openGraph: {
-      title: saved.site.metaTitle,
-      description: saved.site.metaDescription,
+      title: saved.site.metaTitle ?? saved.businessName,
+      description: saved.site.metaDescription ?? "",
       type: "website",
     },
   };
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SitePage({ params }: Props) {
   const { slug } = await params;
   const saved = await getSite(slug);
-  if (!saved || saved.status === "suspended") notFound();
+  if (!saved || !saved.site || saved.status === "suspended") notFound();
 
   return <PublicSite site={saved.site} businessName={saved.businessName} />;
 }
