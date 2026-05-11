@@ -331,10 +331,8 @@ export default function Home() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <div key={feature.title} className="group p-6 rounded-2xl transition-all cursor-default"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(99,102,241,0.4)")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}>
+                <div key={feature.title} className="p-6 rounded-2xl transition-all feature-card"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-4"
                     style={{ background: "rgba(99,102,241,0.15)", color: "#818cf8" }}>
                     <Icon size={20} />
