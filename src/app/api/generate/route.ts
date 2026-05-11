@@ -50,16 +50,26 @@ export async function POST(req: NextRequest) {
 
     // ── Input guard: length + injection + junk ─────────────────────────────
     const guard = guardInputs({
-      businessName: body.businessName,
-      category:     body.category,
-      city:         body.city,
-      state:        body.state,
-      phone:        body.phone,
-      email:        body.email,
-      address:      body.address,
-      description:  body.description,
-      services:     body.services,
-      hours:        body.hours,
+      businessName:       body.businessName,
+      category:           body.category,
+      city:               body.city,
+      state:              body.state,
+      phone:              body.phone,
+      email:              body.email,
+      address:            body.address,
+      website:            body.website,
+      description:        body.description,
+      services:           body.services,
+      hours:              body.hours,
+      specialties:        body.specialties,
+      priceRange:         body.priceRange,
+      yearsInBusiness:    body.yearsInBusiness,
+      teamSize:           body.teamSize,
+      certifications:     body.certifications,
+      paymentMethods:     body.paymentMethods,
+      parking:            body.parking,
+      socialMedia:        body.socialMedia,
+      uniqueSellingPoint: body.uniqueSellingPoint,
     });
     if (!guard.ok) {
       return NextResponse.json({ error: guard.error }, { status: 400 });

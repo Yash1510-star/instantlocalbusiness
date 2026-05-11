@@ -14,9 +14,19 @@ export type BusinessInput = {
   phone: string;
   email: string;
   address?: string;
+  website?: string;
   description: string;
   services?: string;
   hours?: string;
+  specialties?: string;
+  priceRange?: string;
+  yearsInBusiness?: string;
+  teamSize?: string;
+  certifications?: string;
+  paymentMethods?: string;
+  parking?: string;
+  socialMedia?: string;
+  uniqueSellingPoint?: string;
 };
 
 /**
@@ -465,7 +475,20 @@ function buildPrompt(input: BusinessInput): string {
     professional: "Focus on expertise, trust, and outcomes. CTAs should be 'Free Consultation', 'Talk to an Expert', 'Get Started'. Trust points emphasize years of experience, credentials, client outcomes.",
   };
 
-  return `Create complete website copy for this local business:
+  const extraContext = [
+    input.specialties       && `Specialties/Style: ${input.specialties}`,
+    input.priceRange        && `Pricing: ${input.priceRange}`,
+    input.yearsInBusiness   && `Years in Business: ${input.yearsInBusiness}`,
+    input.teamSize          && `Team Size: ${input.teamSize}`,
+    input.certifications    && `Certifications/Licenses: ${input.certifications}`,
+    input.paymentMethods    && `Payment Methods: ${input.paymentMethods}`,
+    input.parking           && `Parking: ${input.parking}`,
+    input.uniqueSellingPoint && `Customer Praise / USP: ${input.uniqueSellingPoint}`,
+    input.socialMedia       && `Social Media: ${input.socialMedia}`,
+    input.website           && `Existing Website: ${input.website}`,
+  ].filter(Boolean).join("\n");
+
+  return `Create complete website copy for this local business. Use ALL the details provided — do NOT invent or guess information that contradicts what's given below.
 
 Business Name: ${input.businessName}
 Category: ${input.category}
@@ -475,7 +498,7 @@ Email: ${input.email}
 Address: ${input.address || `${input.city}, ${input.state}`}
 Description: ${input.description}
 Services/Menu: ${input.services || "Not specified"}
-Hours: ${input.hours || "Please call for hours"}
+Hours: ${input.hours || "Please call for hours"}${extraContext ? `\n${extraContext}` : ""}
 Layout Style: ${layout} — ${layoutGuidance[layout]}
 
 Return ONLY a JSON object (no markdown, no code blocks):

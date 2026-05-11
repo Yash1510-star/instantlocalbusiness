@@ -11,17 +11,27 @@
 // ─── Max lengths ──────────────────────────────────────────────────────────────
 
 export const MAX_LENGTHS = {
-  businessName: 80,
-  category:     60,
-  city:         60,
-  state:        2,
-  phone:        20,
-  email:        100,
-  address:      150,
-  description:  800,   // Main abuse vector — cap tightly
-  services:     500,
-  hours:        200,
-  message:      2000,  // Contact form
+  businessName:       80,
+  category:           60,
+  city:               60,
+  state:              2,
+  phone:              20,
+  email:              100,
+  address:            150,
+  website:            120,
+  description:        800,
+  services:           500,
+  hours:              200,
+  specialties:        300,
+  priceRange:         150,
+  yearsInBusiness:    50,
+  teamSize:           50,
+  certifications:     300,
+  paymentMethods:     150,
+  parking:            100,
+  socialMedia:        200,
+  uniqueSellingPoint: 300,
+  message:            2000,  // Contact form
 };
 
 // ─── Prompt injection patterns ────────────────────────────────────────────────
