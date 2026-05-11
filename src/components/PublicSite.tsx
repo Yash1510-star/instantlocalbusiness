@@ -17,6 +17,15 @@ const ICON_MAP: Record<string, string> = {
 export function PublicSite({ site, businessName }: { site: GeneratedSite; businessName: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [formState, setFormState] = useState({ name: "", contact: "", note: "", submitted: false });
+
+  if (!site || !site.colorScheme) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        <p>Site data is unavailable. Please try again later.</p>
+      </div>
+    );
+  }
+
   const cs = site.colorScheme;
   const isDark = cs.heroBg.includes("950") || cs.heroBg.includes("900") || cs.heroBg === "bg-black";
 
@@ -125,7 +134,7 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
       {/* ── Stats ── */}
       <div className={`${altBg} border-b ${borderColor}`}>
         <div className="max-w-4xl mx-auto grid grid-cols-3 divide-x divide-gray-200">
-          {site.stats.map((s) => (
+          {(site.stats ?? []).map((s) => (
             <div key={s.label} className="px-6 py-8 text-center">
               <div className={`text-3xl font-extrabold ${cs.accent}`}>{s.value}</div>
               <div className={`text-sm mt-1 ${textMuted}`}>{s.label}</div>
@@ -148,7 +157,7 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
           <h2 className={`text-3xl font-bold text-center mb-3 ${textBase}`}>Our Services</h2>
           <p className={`text-center mb-12 ${textMuted}`}>Everything you need, delivered with excellence.</p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {site.services.map((s, i) => (
+            {(site.services ?? []).map((s, i) => (
               <div key={s.title} className={`rounded-2xl overflow-hidden border ${borderColor} ${isDark ? "bg-gray-900" : "bg-white"}`}>
                 <div className="relative h-44 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}

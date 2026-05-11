@@ -55,13 +55,14 @@ async function kvGet(key: string): Promise<SavedSite | null> {
 }
 
 async function kvSet(key: string, value: SavedSite): Promise<void> {
+  // Upstash REST: POST /set/<key> with raw JSON string as body
   await fetch(`${kvBase()}/set/${encodeURIComponent(key)}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${kvToken()}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/octet-stream",
     },
-    body: JSON.stringify(JSON.stringify(value)),
+    body: JSON.stringify(value),
   });
 }
 
@@ -88,9 +89,9 @@ async function kvAppendUserSlug(userId: string, slug: string): Promise<void> {
       method: "POST",
       headers: {
         Authorization: `Bearer ${kvToken()}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
       },
-      body: JSON.stringify(JSON.stringify([...existing, slug])),
+      body: JSON.stringify([...existing, slug]),
     });
   }
 }
