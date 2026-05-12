@@ -13,15 +13,14 @@ const plans = [
     name: "Starter",
     price: "Free",
     period: "",
-    description: "Get your business online today — no card needed",
+    description: "Get online with no cost, ever",
     features: [
       "1-page AI-built website",
-      "AI copywriting, tailored to your business",
-      "Mobile responsive design",
+      "AI copywriting",
+      "Mobile responsive",
       "InstantLocalBusiness subdomain",
       "Contact form",
-      "SSL certificate",
-      "Publish & go live instantly",
+      "Live for 15 days — upgrade anytime to keep it",
     ],
     notIncluded: [
       "Custom domain",
@@ -42,7 +41,7 @@ const plans = [
     description: "Everything a growing local business needs",
     features: [
       "Up to 10 pages",
-      "Custom domain included",
+      "Custom domain connection (bring your own)",
       "Local SEO tools & analytics",
       "Contact & appointment booking forms",
       "Google Maps & business hours",

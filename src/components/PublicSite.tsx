@@ -19,9 +19,27 @@ const ICON_MAP: Record<string, string> = {
   star: "⭐", shield: "🛡️", clock: "⏰", phone: "📞",
 };
 
-export function PublicSite({ site, businessName }: { site: GeneratedSite; businessName: string }) {
+export function PublicSite({
+  site,
+  businessName,
+  plan = "starter",
+  publishedAt,
+}: {
+  site: GeneratedSite;
+  businessName: string;
+  plan?: "starter" | "pro" | "business";
+  publishedAt?: string;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [formState, setFormState] = useState({ name: "", contact: "", note: "", submitted: false });
+
+  const trialBanner = (() => {
+    if (plan !== "starter" || !publishedAt) return null;
+    const ageDays = (Date.now() - new Date(publishedAt).getTime()) / (1000 * 60 * 60 * 24);
+    const daysLeft = Math.ceil(15 - ageDays);
+    if (daysLeft > 3 || daysLeft <= 0) return null;
+    return daysLeft;
+  })();
 
   if (!site || !site.colorScheme) {
     return (
@@ -47,6 +65,16 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
 
   return (
     <div className={`font-sans ${sectionBg} ${textBase} min-h-screen`}>
+
+      {/* ── Trial expiry warning banner ── */}
+      {trialBanner !== null && (
+        <div className="bg-amber-500 text-white text-xs font-semibold px-4 py-2.5 flex items-center justify-center gap-3 text-center">
+          <span>⚠️ This free site expires in <strong>{trialBanner} day{trialBanner !== 1 ? "s" : ""}</strong>.</span>
+          <a href="/pricing" className="underline underline-offset-2 hover:text-white/80 whitespace-nowrap">
+            Upgrade to keep it live →
+          </a>
+        </div>
+      )}
 
       {/* ── Nav ── */}
       <nav className={`sticky top-0 z-50 border-b ${borderColor} ${cs.navBg} backdrop-blur-sm`}>

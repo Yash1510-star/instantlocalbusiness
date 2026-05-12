@@ -96,7 +96,7 @@ const pricingPlans = [
     description: "For growing local businesses",
     features: [
       "Up to 10 pages",
-      "Custom domain included",
+      "Custom domain connection (bring your own)",
       "Local SEO tools & analytics",
       "Contact & booking forms",
       "Google Maps & business hours",
