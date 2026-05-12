@@ -99,107 +99,29 @@ const STEPS = [
 function RateLimitUpgrade({
   resetMessage,
   onBack,
-  businessName,
-  email,
 }: {
   resetMessage: string;
   onBack: () => void;
   businessName: string;
   email: string;
 }) {
-  const [submitted, setSubmitted] = useState(false);
-  const [inputEmail, setInputEmail] = useState(email);
-
-  const handleNotify = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
   return (
     <div className="py-10 max-w-md mx-auto text-center">
-      {/* Icon */}
-      <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-        <span className="text-3xl">🚀</span>
+      <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-5">
+        <span className="text-3xl">⏱️</span>
       </div>
-
       <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
-        Your site is ready to build!
+        Daily limit reached
       </h2>
-      <p className="text-gray-500 text-sm mb-1">
-        You&apos;ve hit the free daily limit.{" "}
-        <span className="font-medium text-gray-700">{resetMessage}</span>
+      <p className="text-gray-500 text-sm mb-2">
+        {resetMessage}
       </p>
-      <p className="text-gray-400 text-xs mb-8">
-        Or unlock unlimited builds right now.
+      <p className="text-gray-400 text-xs mb-6">
+        Your site details are saved — come back and it will be ready to build.
       </p>
-
-      {/* Upgrade card */}
-      <div className="bg-blue-600 rounded-2xl p-6 text-left mb-4">
-        <div className="inline-block text-xs font-bold bg-white text-blue-600 px-3 py-1 rounded-full mb-3">
-          Most Popular
-        </div>
-        <h3 className="text-white font-bold text-lg mb-1">Pro Plan — $29/mo</h3>
-        <p className="text-blue-200 text-sm mb-4">Everything you need to grow online</p>
-        <ul className="space-y-2 mb-5">
-          {[
-            "Unlimited AI site generations",
-            "Custom domain (yourbusiness.com)",
-            "SEO tools & Google Analytics",
-            "Contact & booking forms",
-            "AI chat widget",
-            "Priority support",
-          ].map((f) => (
-            <li key={f} className="flex items-center gap-2 text-sm text-blue-100">
-              <CheckCircle2 size={13} className="text-blue-300 flex-shrink-0" />
-              {f}
-            </li>
-          ))}
-        </ul>
-        <a
-          href="/pricing"
-          className="block w-full text-center bg-white text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors text-sm"
-        >
-          Start Pro — $29/mo →
-        </a>
-      </div>
-
-      {/* Email capture for free users */}
-      {!submitted ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-left">
-          <p className="text-sm font-semibold text-gray-800 mb-1">
-            Not ready to upgrade?
-          </p>
-          <p className="text-xs text-gray-500 mb-3">
-            We&apos;ll email you when {businessName || "your site"} is ready — plus tips to get more customers online.
-          </p>
-          <form onSubmit={handleNotify} className="flex gap-2">
-            <input
-              type="email"
-              required
-              value={inputEmail}
-              onChange={(e) => setInputEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              className="bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap"
-            >
-              Notify me
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="bg-green-50 border border-green-100 rounded-2xl p-5 text-center">
-          <CheckCircle2 size={20} className="text-green-500 mx-auto mb-2" />
-          <p className="text-sm font-semibold text-gray-800">Got it! We&apos;ll be in touch.</p>
-          <p className="text-xs text-gray-500 mt-1">Check your inbox for tips on getting online fast.</p>
-        </div>
-      )}
-
       <button
         onClick={onBack}
-        className="mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
       >
         ← Go back and edit
       </button>
