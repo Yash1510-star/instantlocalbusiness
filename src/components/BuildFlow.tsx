@@ -298,7 +298,8 @@ export function BuildFlow() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       setLoadingError(msg);
-      setLoading(false);
+      // keep loading=true so the error panel stays visible;
+      // each error screen has its own "back" button that calls setLoading(false)
     }
   };
 
