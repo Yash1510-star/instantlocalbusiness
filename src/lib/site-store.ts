@@ -30,10 +30,10 @@ export type SavedSite = {
 // ─── Upstash Redis helpers ────────────────────────────────────────────────────
 
 function kvBase() {
-  return process.env.UPSTASH_REDIS_REST_URL;
+  return process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 }
 function kvToken() {
-  return process.env.UPSTASH_REDIS_REST_TOKEN;
+  return process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 }
 function kvReady() {
   return !!(kvBase() && kvToken());
