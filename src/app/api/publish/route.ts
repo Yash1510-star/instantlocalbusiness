@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     };
 
     await saveSite(savedSite);
-    console.log(`[publish] Saved site slug="${slug}" kvReady=${!!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)}`);
+    console.log(`[publish] Saved site slug="${slug}" kvReady=${!!((process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) && (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN))}`);
 
     // Send confirmation email if Resend is configured
     if (process.env.RESEND_API_KEY) {
