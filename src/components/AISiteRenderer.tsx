@@ -22,9 +22,21 @@ import {
 } from "lucide-react";
 import type { GeneratedSite } from "@/lib/generate-site";
 
-// ─── Unsplash helper ─────────────────────────────────────────────────────────
-function unsplash(id: string, w: number, h: number) {
-  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+// ─── Photo URL helper — handles Unsplash IDs, Unsplash URLs, Pexels, Pixabay ─
+function photoUrl(ref: string, w: number, h: number) {
+  if (!ref.startsWith("http")) {
+    // Legacy Unsplash photo ID (static fallback table)
+    return `https://images.unsplash.com/${ref}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  }
+  if (ref.includes("unsplash.com")) {
+    // Preserve ixid/ixlib from stored URL, append sizing
+    return `${ref}&auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  }
+  if (ref.includes("pexels.com")) {
+    return `${ref.split("?")[0]}?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
+  }
+  // Pixabay and others — use as-is (no dynamic resize support)
+  return ref;
 }
 
 // ─── Colour palettes ─────────────────────────────────────────────────────────
@@ -248,7 +260,7 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
       {/* ── Cinematic hero — full bleed with bottom gradient ── */}
       <div className="relative overflow-hidden" style={{height: compact ? 320 : 560}}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={customHero ?? unsplash(s.heroPhoto, 1400, 700)} alt="hero"
+        <img src={customHero ?? photoUrl(s.heroPhoto, 1400, 700)} alt="hero"
           className="absolute inset-0 w-full h-full object-cover scale-105" />
         <div className={`absolute inset-0 bg-gradient-to-t ${p.hero} opacity-90`} />
         <div className="absolute inset-0 bg-gradient-to-r from-gray-950/80 via-transparent to-transparent" />
@@ -300,7 +312,7 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
             <div key={sv.title} className="group flex gap-4 bg-white/5 hover:bg-white/8 rounded-2xl p-4 border border-white/5 hover:border-white/10 transition-all">
               <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={unsplash(s.servicePhotos[i] ?? s.servicePhotos[0], 160, 160)} alt={sv.title}
+                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 160, 160)} alt={sv.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
               </div>
               <div className="flex-1 min-w-0">
@@ -318,7 +330,7 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
       {/* ── Atmospheric about quote ── */}
       <div id="about" className="relative py-20 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={unsplash(s.servicePhotos[2] ?? s.heroPhoto, 1200, 500)} alt="" className="absolute inset-0 w-full h-full object-cover"/>
+        <img src={photoUrl(s.servicePhotos[2] ?? s.heroPhoto, 1200, 500)} alt="" className="absolute inset-0 w-full h-full object-cover"/>
         <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px]"/>
         <div className="relative max-w-2xl mx-auto px-8 text-center">
           <div className={`text-6xl font-serif leading-none mb-4 ${p.accent}`}>&ldquo;</div>
@@ -405,7 +417,7 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
       {/* Hero */}
       <div className="relative overflow-hidden" style={{height: compact ? 300 : 480}}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={customHero ?? unsplash(s.heroPhoto, 1400, 600)} alt="hero"
+        <img src={customHero ?? photoUrl(s.heroPhoto, 1400, 600)} alt="hero"
           className="absolute inset-0 w-full h-full object-cover" />
         <div className={`absolute inset-0 bg-gradient-to-r ${p.hero} opacity-95`}/>
         <ImageUploadOverlay onUpload={setCustomHero} />
@@ -461,7 +473,7 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
             <div key={sv.title} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
               <div className="relative h-36 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={unsplash(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 220)} alt={sv.title}
+                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 220)} alt={sv.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
                 <div className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded-lg ${p.primary} ${p.primaryText}`}>
                   {ICON_MAP[sv.icon ?? ""] ?? "⚡"}
@@ -548,7 +560,7 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
       {/* Hero — full bleed, soft gradient bottom */}
       <div className="relative overflow-hidden" style={{height: compact ? 320 : 520}}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={customHero ?? unsplash(s.heroPhoto, 1400, 700)} alt="hero"
+        <img src={customHero ?? photoUrl(s.heroPhoto, 1400, 700)} alt="hero"
           className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60"/>
         <ImageUploadOverlay onUpload={setCustomHero} />
@@ -609,7 +621,7 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
             <div key={sv.title} className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               <div className="relative h-44 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={unsplash(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 280)} alt={sv.title}
+                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 280)} alt={sv.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"/>
               </div>
@@ -629,7 +641,7 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
       <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-gray-50`}>
         <div className="relative min-h-[280px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={unsplash(s.servicePhotos[1] ?? s.heroPhoto, 600, 400)} alt="about"
+          <img src={photoUrl(s.servicePhotos[1] ?? s.heroPhoto, 600, 400)} alt="about"
             className="absolute inset-0 w-full h-full object-cover"/>
         </div>
         <div className="px-8 py-12 flex flex-col justify-center">
@@ -720,7 +732,7 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
         {!compact && (
           <div className="col-span-2 relative overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={customHero ?? unsplash(s.heroPhoto, 600, 600)} alt="hero"
+            <img src={customHero ?? photoUrl(s.heroPhoto, 600, 600)} alt="hero"
               className="absolute inset-0 w-full h-full object-cover"/>
             <div className="absolute inset-0 bg-slate-900/20"/>
             <ImageUploadOverlay onUpload={setCustomHero} />
@@ -764,7 +776,7 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
               <div className="flex gap-3">
                 <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={unsplash(s.servicePhotos[i] ?? s.servicePhotos[0], 100, 100)} alt={sv.title} className="w-full h-full object-cover"/>
+                  <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 100, 100)} alt={sv.title} className="w-full h-full object-cover"/>
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-gray-900 mb-1">{sv.title}</h3>
@@ -780,7 +792,7 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
       <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"}`}>
         <div className="relative min-h-[300px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={unsplash(s.servicePhotos[0] ?? s.heroPhoto, 600, 500)} alt="about"
+          <img src={photoUrl(s.servicePhotos[0] ?? s.heroPhoto, 600, 500)} alt="about"
             className="absolute inset-0 w-full h-full object-cover"/>
           <div className="absolute inset-0 bg-slate-900/50"/>
         </div>

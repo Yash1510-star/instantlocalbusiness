@@ -4,8 +4,13 @@ import { Phone, MapPin, Clock, CheckCircle2, Menu, X } from "lucide-react";
 import { useState } from "react";
 import type { GeneratedSite } from "@/lib/generate-site";
 
-function unsplash(id: string, w: number, h: number) {
-  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+function photoUrl(ref: string, w: number, h: number) {
+  if (!ref.startsWith("http")) {
+    return `https://images.unsplash.com/${ref}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  }
+  if (ref.includes("unsplash.com")) return `${ref}&auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  if (ref.includes("pexels.com")) return `${ref.split("?")[0]}?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
+  return ref;
 }
 
 const ICON_MAP: Record<string, string> = {
@@ -89,7 +94,7 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
       <section className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={unsplash(site.heroPhoto, 1600, 800)}
+          src={photoUrl(site.heroPhoto, 1600, 800)}
           alt={businessName}
           className="w-full object-cover"
           style={{ height: "min(600px, 70vh)" }}
@@ -162,7 +167,7 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
                 <div className="relative h-44 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={unsplash(site.servicePhotos[i] ?? site.servicePhotos[0], 600, 300)}
+                    src={photoUrl(site.servicePhotos[i] ?? site.servicePhotos[0], 600, 300)}
                     alt={s.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   />
@@ -187,7 +192,7 @@ export function PublicSite({ site, businessName }: { site: GeneratedSite; busine
       <section id="contact" className="relative py-24 px-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={unsplash(site.heroPhoto, 1600, 700)}
+          src={photoUrl(site.heroPhoto, 1600, 700)}
           alt="contact background"
           className="absolute inset-0 w-full h-full object-cover"
         />

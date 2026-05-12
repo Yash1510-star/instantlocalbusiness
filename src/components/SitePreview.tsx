@@ -754,10 +754,15 @@ export function SitePreview({ slug }: { slug: string }) {
   );
 }
 
-// ─── Unsplash helper (used by MockWebsite below) ──────────────────────────────
+// ─── Photo URL helper (used by MockWebsite below) ─────────────────────────────
 
-function unsplash(photoId: string, w: number, h: number) {
-  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+function photoUrl(ref: string, w: number, h: number) {
+  if (!ref.startsWith("http")) {
+    return `https://images.unsplash.com/${ref}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  }
+  if (ref.includes("unsplash.com")) return `${ref}&auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+  if (ref.includes("pexels.com")) return `${ref.split("?")[0]}?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
+  return ref;
 }
 
 // ─── Static template MockWebsite (used for demo/examples pages) ──────────────
@@ -804,7 +809,7 @@ function MockWebsite({
       <div className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={unsplash(template.heroPhoto, 1200, 600)}
+          src={photoUrl(template.heroPhoto, 1200, 600)}
           alt={template.name}
           className="w-full object-cover"
           style={{ height: compact ? 260 : 420 }}
@@ -884,7 +889,7 @@ function MockWebsite({
               <div className="relative h-32 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={unsplash(template.servicePhotos[i] ?? template.servicePhotos[0], 400, 200)}
+                  src={photoUrl(template.servicePhotos[i] ?? template.servicePhotos[0], 400, 200)}
                   alt={s.title}
                   className="w-full h-full object-cover"
                 />
@@ -932,7 +937,7 @@ function MockWebsite({
       <div className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={unsplash(template.heroPhoto, 1200, 500)}
+          src={photoUrl(template.heroPhoto, 1200, 500)}
           alt="background"
           className="w-full object-cover"
           style={{ height: compact ? 480 : 420 }}

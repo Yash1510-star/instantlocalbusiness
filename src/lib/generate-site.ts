@@ -334,45 +334,94 @@ const DEFAULT_LAYOUT: { layout: LayoutVariant; colorScheme: ColorScheme } = {
   },
 };
 
-// ─── Dynamic Unsplash photo search ───────────────────────────────────────────
+// ─── Photo providers (Unsplash → Pexels → Pixabay cascade) ──────────────────
+// All functions return full base URLs (no size params) so the photoUrl()
+// helper in each component can append the right dimensions per usage.
 
-async function fetchUnsplashPhotos(
-  query: string,
-  count: number,
-): Promise<string[]> {
+async function fetchUnsplashPhotos(query: string, count: number): Promise<string[]> {
   const key = process.env.UNSPLASH_ACCESS_KEY;
-  if (!key) {
-    console.warn("[unsplash] UNSPLASH_ACCESS_KEY not set — using static fallback");
-    return [];
-  }
+  if (!key) return [];
   try {
     const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${Math.min(count, 30)}&orientation=landscape&content_filter=high`;
     const res = await fetch(url, {
       headers: { Authorization: `Client-ID ${key}` },
-      // cache: revalidate once per day — same business category always gets
-      // fresh-ish results without hammering the 50 req/hr free limit
       next: { revalidate: 86400 },
     } as RequestInit);
     if (!res.ok) {
-      const body = await res.text();
-      console.error(`[unsplash] HTTP ${res.status} for query="${query}":`, body);
+      console.error(`[unsplash] HTTP ${res.status} for query="${query}"`);
       return [];
     }
-    // The short `id` field (e.g. "vjjJBk6GrV8") is NOT the URL path.
-    // Extract the real photo path from urls.raw, e.g.:
-    //   "https://images.unsplash.com/photo-1724589511191-1ced6d014934?..."
-    //   → "photo-1724589511191-1ced6d014934"
     const data = await res.json() as { results: { urls: { raw: string } }[] };
-    const ids = data.results.map((r) => {
-      const match = r.urls.raw.match(/unsplash\.com\/(photo-[^?]+)/);
-      return match ? match[1] : "";
+    // Keep ixid+ixlib from the raw URL — Unsplash CDN requires them to serve images.
+    // Strip only non-essential params (s=, crop=, etc.) and keep ixid/ixlib.
+    const urls = data.results.map((r) => {
+      const u = new URL(r.urls.raw);
+      const kept = new URLSearchParams();
+      for (const [k, v] of u.searchParams) {
+        if (k === "ixid" || k === "ixlib") kept.set(k, v);
+      }
+      return `${u.origin}${u.pathname}?${kept.toString()}`;
     }).filter(Boolean);
-    console.log(`[unsplash] query="${query}" → ${ids.length} ids`);
-    return ids;
+    console.log(`[unsplash] query="${query}" → ${urls.length} results`);
+    return urls;
   } catch (err) {
     console.error("[unsplash] fetch failed:", err);
     return [];
   }
+}
+
+async function fetchPexelsPhotos(query: string, count: number): Promise<string[]> {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key) return [];
+  try {
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${Math.min(count, 80)}&orientation=landscape`;
+    const res = await fetch(url, {
+      headers: { Authorization: key },
+      next: { revalidate: 86400 },
+    } as RequestInit);
+    if (!res.ok) {
+      console.error(`[pexels] HTTP ${res.status} for query="${query}"`);
+      return [];
+    }
+    const data = await res.json() as { photos: { src: { original: string } }[] };
+    const urls = data.photos.map((p) => p.src.original.split("?")[0]).filter(Boolean);
+    console.log(`[pexels] query="${query}" → ${urls.length} results`);
+    return urls;
+  } catch (err) {
+    console.error("[pexels] fetch failed:", err);
+    return [];
+  }
+}
+
+async function fetchPixabayPhotos(query: string, count: number): Promise<string[]> {
+  const key = process.env.PIXABAY_API_KEY;
+  if (!key) return [];
+  try {
+    const url = `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&per_page=${Math.min(count, 200)}&orientation=horizontal&image_type=photo&safesearch=true`;
+    const res = await fetch(url, {
+      next: { revalidate: 86400 },
+    } as RequestInit);
+    if (!res.ok) {
+      console.error(`[pixabay] HTTP ${res.status} for query="${query}"`);
+      return [];
+    }
+    const data = await res.json() as { hits: { largeImageURL: string }[] };
+    const urls = data.hits.map((h) => h.largeImageURL).filter(Boolean);
+    console.log(`[pixabay] query="${query}" → ${urls.length} results`);
+    return urls;
+  } catch (err) {
+    console.error("[pixabay] fetch failed:", err);
+    return [];
+  }
+}
+
+// Try Unsplash first, fall through to Pexels, then Pixabay.
+async function fetchPhotos(query: string, count: number): Promise<string[]> {
+  const unsplash = await fetchUnsplashPhotos(query, count);
+  if (unsplash.length >= count) return unsplash;
+  const pexels = await fetchPexelsPhotos(query, count);
+  if (pexels.length > 0) return pexels;
+  return fetchPixabayPhotos(query, count);
 }
 
 // ─── Unsplash photo IDs per category (static fallback) ───────────────────────
@@ -626,14 +675,14 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
   const serviceQuery = input.category;
 
   const [heroResults, serviceResults] = await Promise.all([
-    fetchUnsplashPhotos(heroQuery, 1),
-    fetchUnsplashPhotos(serviceQuery, 6),
+    fetchPhotos(heroQuery, 1),
+    fetchPhotos(serviceQuery, 6),
   ]);
 
   // If city-specific hero returned nothing, retry with category only
   const heroResultsFinal = heroResults.length > 0
     ? heroResults
-    : await fetchUnsplashPhotos(serviceQuery, 1);
+    : await fetchPhotos(serviceQuery, 1);
 
   console.log(`[photos] hero query="${heroQuery}" → ${heroResults.length} results, fallback-query results: ${heroResultsFinal.length}`);
   console.log(`[photos] service query="${serviceQuery}" → ${serviceResults.length} results:`, serviceResults);
@@ -651,7 +700,10 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
     ? serviceResults
     : staticPhotos.services;
 
-  console.log(`[photos] using: hero=${heroPhoto} source=${heroResultsFinal.length ? "unsplash" : "static"}`);
+  const photoSource = heroResultsFinal.length
+    ? (heroResultsFinal[0].includes("pexels") ? "pexels" : heroResultsFinal[0].includes("pixabay") ? "pixabay" : "unsplash")
+    : "static";
+  console.log(`[photos] using: hero=${heroPhoto} source=${photoSource}`);
 
   const site: GeneratedSite = {
     ...parsed,
