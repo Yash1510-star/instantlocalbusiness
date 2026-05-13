@@ -56,6 +56,17 @@ export type ColorScheme = {
   badge: string;      // Tailwind classes for trust badge pill
 };
 
+export type MenuItemEntry = {
+  name: string;
+  description?: string;
+  price: string;
+};
+
+export type MenuSection = {
+  section: string;
+  items: MenuItemEntry[];
+};
+
 export type GeneratedSite = {
   // Layout
   layout: LayoutVariant;
@@ -81,6 +92,9 @@ export type GeneratedSite = {
 
   // Urgency/trust strip (short 3-word phrases)
   trustPoints: string[];
+
+  // Optional menu / price list (omit or empty array if not applicable)
+  menu?: MenuSection[];
 
   // CTA section
   ctaHeading: string;
@@ -564,6 +578,100 @@ function getCategoryConfig(category: string) {
   return fuzzy?.[1] ?? DEFAULT_LAYOUT;
 }
 
+function buildMenuGuidance(layout: LayoutVariant, input: BusinessInput): string {
+  const hasPricing = !!(input.priceRange || (input.services && /\$|\bprice|\brate|\bfee|\bcost|\bcharge|\bfrom\b|\bper\b/i.test(input.services)));
+
+  if (layout === "hospitality") {
+    return `[
+    {
+      "section": "Starters",
+      "items": [
+        {"name": "Item name", "description": "Brief description", "price": "$XX"},
+        {"name": "Item name", "description": "Brief description", "price": "$XX"},
+        {"name": "Item name", "price": "$XX"}
+      ]
+    },
+    {
+      "section": "Mains",
+      "items": [
+        {"name": "Item name", "description": "Brief description", "price": "$XX"},
+        {"name": "Item name", "description": "Brief description", "price": "$XX"},
+        {"name": "Item name", "description": "Brief description", "price": "$XX"},
+        {"name": "Item name", "price": "$XX"}
+      ]
+    },
+    {
+      "section": "Desserts & Drinks",
+      "items": [
+        {"name": "Item name", "price": "$XX"},
+        {"name": "Item name", "price": "$XX"}
+      ]
+    }
+  ]
+  // Generate 3 sections with realistic items and prices for ${input.category} in ${input.city}. Use actual menu items from Services/Menu field if provided. Use realistic local market prices.`;
+  }
+
+  if (layout === "wellness" || layout === "boutique") {
+    if (!hasPricing) return `[]  // Return empty array — no pricing info provided`;
+    return `[
+    {
+      "section": "Our Services",
+      "items": [
+        {"name": "Service name", "description": "Duration or detail (e.g. 60 min)", "price": "$XX"},
+        {"name": "Service name", "description": "Duration or detail", "price": "$XX"},
+        {"name": "Service name", "description": "Duration or detail", "price": "$XX"},
+        {"name": "Service name", "price": "$XX"}
+      ]
+    }
+  ]
+  // Generate realistic service pricing based on Services/Menu field and Pricing: ${input.priceRange || "not specified"}. Use local market rates for ${input.city}.`;
+  }
+
+  if (layout === "professional") {
+    if (!hasPricing) return `[]  // Return empty array — no pricing info provided`;
+    return `[
+    {
+      "section": "Fee Structure",
+      "items": [
+        {"name": "Service / consultation type", "description": "Brief note", "price": "Free / $XXX / From $XX/hr"},
+        {"name": "Service type", "price": "$ range"}
+      ]
+    }
+  ]
+  // Generate professional fee structure based on Services/Menu and Pricing: ${input.priceRange || "not specified"}.`;
+  }
+
+  if (layout === "creative") {
+    if (!hasPricing) return `[]  // Return empty array — no pricing info provided`;
+    return `[
+    {
+      "section": "Classes & Packages",
+      "items": [
+        {"name": "Class / package name", "description": "Duration or level", "price": "$XX/class or $XX/mo"},
+        {"name": "Class / package name", "description": "Detail", "price": "$XX"}
+      ]
+    }
+  ]
+  // Generate realistic class pricing based on Services/Menu and Pricing: ${input.priceRange || "not specified"}.`;
+  }
+
+  if (layout === "service") {
+    if (!hasPricing) return `[]  // Return empty array — no pricing info provided`;
+    return `[
+    {
+      "section": "Pricing Guide",
+      "items": [
+        {"name": "Service type", "description": "Brief detail", "price": "From $XX / Free estimate"},
+        {"name": "Service type", "price": "$XX–$XX"}
+      ]
+    }
+  ]
+  // Generate realistic service pricing based on Services/Menu and Pricing: ${input.priceRange || "not specified"}.`;
+  }
+
+  return `[]`;
+}
+
 function buildPrompt(input: BusinessInput): string {
   const { layout } = getCategoryConfig(input.category);
 
@@ -631,6 +739,7 @@ Return ONLY a JSON object (no markdown, no code blocks):
     "3-5 word trust phrase",
     "3-5 word trust phrase"
   ],
+  "menu": ${buildMenuGuidance(layout, input)},
   "ctaHeading": "Action heading (6-10 words)",
   "ctaBody": "Supporting text (20-30 words)",
   "ctaButtonLabel": "Button text (2-4 words)",

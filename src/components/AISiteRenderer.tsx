@@ -24,7 +24,7 @@ import {
   ChevronDown, Star, ArrowRight, Zap, Shield, Award,
   Pencil, Trash2, Plus, X, Check,
 } from "lucide-react";
-import type { GeneratedSite } from "@/lib/generate-site";
+import type { GeneratedSite, MenuSection, MenuItemEntry } from "@/lib/generate-site";
 
 // ─── Readonly context — when true, all editing UI is hidden ──────────────────
 const ReadonlyCtx = createContext(false);
@@ -620,6 +620,171 @@ function ServiceEditHint({ dark }: { dark?: boolean }) {
   );
 }
 
+// ─── Menu / Pricing display + editing ────────────────────────────────────────
+
+type MenuState = MenuSection[];
+
+function useMenuState(initial?: MenuSection[]) {
+  const [menu, setMenu] = useState<MenuState>(initial ?? []);
+
+  function updateItem(sIdx: number, iIdx: number, fields: Partial<MenuItemEntry>) {
+    setMenu(prev => prev.map((sec, si) =>
+      si !== sIdx ? sec : { ...sec, items: sec.items.map((it, ii) => ii !== iIdx ? it : { ...it, ...fields }) }
+    ));
+  }
+  function deleteItem(sIdx: number, iIdx: number) {
+    setMenu(prev => prev.map((sec, si) =>
+      si !== sIdx ? sec : { ...sec, items: sec.items.filter((_, ii) => ii !== iIdx) }
+    ));
+  }
+  function addItem(sIdx: number) {
+    setMenu(prev => prev.map((sec, si) =>
+      si !== sIdx ? sec : { ...sec, items: [...sec.items, { name: "New item", price: "$0" }] }
+    ));
+  }
+  function updateSectionName(sIdx: number, name: string) {
+    setMenu(prev => prev.map((sec, si) => si !== sIdx ? sec : { ...sec, section: name }));
+  }
+  function addSection() {
+    setMenu(prev => [...prev, { section: "New Section", items: [{ name: "New item", price: "$0" }] }]);
+  }
+  function deleteSection(sIdx: number) {
+    setMenu(prev => prev.filter((_, si) => si !== sIdx));
+  }
+
+  return { menu, setMenu, updateItem, deleteItem, addItem, updateSectionName, addSection, deleteSection };
+}
+
+type MenuDisplayProps = {
+  menu: MenuState;
+  hooks: ReturnType<typeof useMenuState>;
+  variant: "hospitality" | "light" | "dark";
+  accentClass?: string;
+};
+
+function MenuDisplay({ menu, hooks, variant, accentClass = "text-gray-500" }: MenuDisplayProps) {
+  const readonly = useContext(ReadonlyCtx);
+  if (!menu || menu.length === 0) return null;
+
+  const isHospitality = variant === "hospitality";
+  const isDark = variant === "dark";
+
+  const wrapCls = isHospitality
+    ? "bg-gray-950 px-6 py-14"
+    : isDark
+      ? "bg-white/5 px-6 py-12"
+      : "bg-white px-6 py-12 border-t border-gray-100";
+
+  const titleCls = isHospitality || isDark ? "text-white" : "text-gray-900";
+  const sectionCls = isHospitality || isDark ? "text-white/80 border-white/10" : "text-gray-800 border-gray-100";
+  const itemNameCls = isHospitality || isDark ? "text-white/90" : "text-gray-800";
+  const itemDescCls = isHospitality || isDark ? "text-white/40" : "text-gray-400";
+  const itemPriceCls = accentClass;
+  const dividerCls = isHospitality || isDark ? "border-white/5" : "border-gray-50";
+  const addBtnCls = isDark || isHospitality
+    ? "text-white/30 hover:text-white/60 border-white/10 hover:border-white/30"
+    : "text-gray-300 hover:text-gray-500 border-gray-100 hover:border-gray-300";
+
+  return (
+    <div className={wrapCls}>
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${accentClass}`}>Menu & Pricing</p>
+            <h2 className={`text-2xl font-black ${titleCls}`}>What We Offer</h2>
+          </div>
+          {!readonly && (
+            <button
+              onClick={hooks.addSection}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${addBtnCls}`}
+            >
+              + Section
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-10">
+          {menu.map((sec, sIdx) => (
+            <div key={sIdx}>
+              <div className="flex items-center gap-2 mb-4">
+                {readonly ? (
+                  <h3 className={`text-sm font-bold uppercase tracking-widest ${sectionCls} border-b pb-2 flex-1`}>{sec.section}</h3>
+                ) : (
+                  <>
+                    <input
+                      value={sec.section}
+                      onChange={e => hooks.updateSectionName(sIdx, e.target.value)}
+                      className={`text-sm font-bold uppercase tracking-widest bg-transparent border-b pb-2 flex-1 focus:outline-none ${sectionCls}`}
+                    />
+                    <button onClick={() => hooks.deleteSection(sIdx)} className="text-red-400/60 hover:text-red-400 transition-colors">
+                      <X size={13} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-0">
+                {sec.items.map((item, iIdx) => (
+                  <div key={iIdx} className={`flex items-start justify-between gap-4 py-3 border-b ${dividerCls} group`}>
+                    <div className="flex-1 min-w-0">
+                      {readonly ? (
+                        <>
+                          <p className={`font-semibold text-sm ${itemNameCls}`}>{item.name}</p>
+                          {item.description && <p className={`text-xs mt-0.5 ${itemDescCls}`}>{item.description}</p>}
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            value={item.name}
+                            onChange={e => hooks.updateItem(sIdx, iIdx, { name: e.target.value })}
+                            className={`font-semibold text-sm bg-transparent focus:outline-none focus:border-b w-full ${itemNameCls}`}
+                            placeholder="Item name"
+                          />
+                          <input
+                            value={item.description ?? ""}
+                            onChange={e => hooks.updateItem(sIdx, iIdx, { description: e.target.value })}
+                            className={`text-xs mt-0.5 bg-transparent focus:outline-none w-full ${itemDescCls}`}
+                            placeholder="Description or duration (optional)"
+                          />
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {readonly ? (
+                        <span className={`font-bold text-sm ${itemPriceCls}`}>{item.price}</span>
+                      ) : (
+                        <input
+                          value={item.price}
+                          onChange={e => hooks.updateItem(sIdx, iIdx, { price: e.target.value })}
+                          className={`font-bold text-sm bg-transparent focus:outline-none text-right w-20 ${itemPriceCls}`}
+                          placeholder="$0"
+                        />
+                      )}
+                      {!readonly && (
+                        <button onClick={() => hooks.deleteItem(sIdx, iIdx)} className="opacity-0 group-hover:opacity-100 text-red-400/60 hover:text-red-400 transition-all">
+                          <X size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!readonly && (
+                  <button
+                    onClick={() => hooks.addItem(sIdx)}
+                    className={`w-full text-xs py-2 mt-1 rounded-lg border border-dashed transition-all ${addBtnCls}`}
+                  >
+                    + Add item
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ICON MAP ─────────────────────────────────────────────────────────────────
 const ICON_MAP: Record<string, React.ReactNode> = {
   wrench: "🔧", scissors: "✂️", scale: "⚖️", heart: "❤️",
@@ -639,9 +804,10 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero, onSite
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
   const light = isLightPalette(p);
@@ -754,6 +920,8 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero, onSite
         ))}
       </div>
 
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="hospitality" accentClass={p.accent} />
+
       {/* ── CTA booking ── */}
       <div className={`px-8 py-14 ${p.primary} text-center`}>
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
@@ -790,9 +958,10 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero, onSiteChan
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -917,6 +1086,8 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero, onSiteChan
         </div>
       </div>
 
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="light" accentClass={p.accent} />
+
       <footer className="px-6 py-5 bg-gray-900 text-center text-xs text-gray-500">
         © {new Date().getFullYear()} {businessName}. All rights reserved. · Powered by InstantLocalBusiness.com
       </footer>
@@ -936,9 +1107,10 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -1055,6 +1227,8 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
         </div>
       </div>
 
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="light" accentClass={p.accent} />
+
       {/* CTA */}
       <div className={`px-8 py-14 ${p.primary} text-center`}>
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
@@ -1091,9 +1265,10 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero, onSit
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -1208,6 +1383,8 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero, onSit
         </div>
       </div>
 
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="light" accentClass={p.accent} />
+
       {/* CTA */}
       <div className="px-8 py-16 bg-white text-center">
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
@@ -1243,9 +1420,10 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Studio";
 
@@ -1345,6 +1523,8 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
         </div>
       </div>
 
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="dark" accentClass={p.accent} />
+
       {/* Contact */}
       <div id="contact" className="bg-black px-8 py-14 text-center">
         <div className={`text-xs font-black uppercase tracking-[0.25em] mb-4 ${p.accent}`}>Let&apos;s Connect</div>
@@ -1389,9 +1569,10 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const menuHooks = useMenuState(site.menu);
   const onSiteChangeRef = useRef(onSiteChange);
   useEffect(() => { onSiteChangeRef.current = onSiteChange; });
-  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto, menu: menuHooks.menu }); }, [s, svcs, svcPhotos, customHero, menuHooks.menu]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Boutique";
 
@@ -1482,6 +1663,8 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
         <EditableText value={s.aboutBody} onChange={v => setS({...s, aboutBody: v})}
           className="block text-sm text-gray-500 leading-relaxed italic" multiline />
       </div>
+
+      <MenuDisplay menu={menuHooks.menu} hooks={menuHooks} variant="light" accentClass={p.accent} />
 
       {/* Booking CTA */}
       <div id="contact" className="bg-gray-50 px-8 py-14">
