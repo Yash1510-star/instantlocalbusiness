@@ -468,9 +468,9 @@ function ContactForm({
     }
   }
 
-  const inputBase = `w-full px-4 py-2.5 ${rounded} text-sm focus:outline-none focus:ring-2`;
-  // Always use solid white bg + dark text so the typed value is always readable
-  const inputClass = `${inputBase} bg-white text-gray-900 placeholder-gray-400 border border-white/30 focus:ring-blue-400`;
+  const inputBase = `w-full px-4 py-3 ${rounded} text-base font-sans focus:outline-none focus:ring-2`;
+  // Solid white bg, visible gray border, dark text — readable on any layout background
+  const inputClass = `${inputBase} bg-white text-gray-900 placeholder-gray-400 border border-gray-300 focus:border-blue-400 focus:ring-blue-100`;
 
   const defaultBtn = dark
     ? `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`
