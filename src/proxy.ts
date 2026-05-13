@@ -33,7 +33,14 @@ export const proxy = clerkMiddleware(async (auth, req) => {
   }
 
   if (isProtected(req)) {
-    await auth.protect();
+    const session = await auth();
+    if (!session.userId) {
+      // API routes must get JSON 401 — not an HTML redirect — so fetch() callers can handle it
+      if (req.nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      await auth.protect();
+    }
   }
 });
 
