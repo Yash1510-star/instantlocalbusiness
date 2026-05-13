@@ -66,16 +66,22 @@ async function kvGet(key: string): Promise<SavedSite | null> {
   }
 }
 
+const FREE_TRIAL_TTL_SECONDS = 15 * 24 * 60 * 60; // 15 days
+
 async function kvSet(key: string, value: SavedSite): Promise<void> {
-  // Use pipeline format: POST to /pipeline with ["SET", key, value]
-  // This is the most reliable way to store JSON values in Upstash REST API
+  // Starter sites auto-expire from Redis after 15 days — no cron needed
+  const cmd: unknown[] =
+    value.plan === "starter"
+      ? ["SET", key, JSON.stringify(value), "EX", FREE_TRIAL_TTL_SECONDS]
+      : ["SET", key, JSON.stringify(value)];
+
   const res = await fetch(`${kvBase()}/pipeline`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${kvToken()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify([["SET", key, JSON.stringify(value)]]),
+    body: JSON.stringify([cmd]),
   });
   if (!res.ok) {
     const text = await res.text();
