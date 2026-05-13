@@ -1,10 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { RESERVED_SLUGS } from "@/lib/slug-rules";
 
-const isProtected = createRouteMatcher(["/dashboard(.*)"]);
+const isProtected = createRouteMatcher(["/dashboard(.*)", "/api/my-sites(.*)", "/api/publish(.*)"]);
 
-// Subdomains reserved for infrastructure — never tenant-route these
-const RESERVED = new Set(["www", "clerk", "accounts", "clkmail", "clk", "clk2"]);
+// Use shared canonical reserved list from slug-rules
+const RESERVED = RESERVED_SLUGS;
 
 function getRootDomain(): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com";

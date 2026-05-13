@@ -736,7 +736,22 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    throw new Error(`AI returned invalid JSON. Raw: ${response.text.slice(0, 300)}`);
+    // Response was likely truncated — retry once with a stricter length hint
+    console.warn("[generateSite] JSON parse failed, retrying with brevity hint. Raw:", response.text.slice(0, 200));
+    const retryMessages = [
+      { role: "system" as const, content: SYSTEM_PROMPT },
+      { role: "user" as const, content: buildPrompt(input) + "\n\nIMPORTANT: Keep all string values concise (under 20 words each) to avoid truncation. Return valid complete JSON only." },
+    ];
+    const retryResponse = await generateText(retryMessages);
+    const retryCleaned = retryResponse.text
+      .replace(/^```(?:json)?\n?/m, "")
+      .replace(/\n?```$/m, "")
+      .trim();
+    try {
+      parsed = JSON.parse(retryCleaned);
+    } catch {
+      throw new Error("Site generation failed — please try again.");
+    }
   }
 
   if (!parsed.services || parsed.services.length < 3) {

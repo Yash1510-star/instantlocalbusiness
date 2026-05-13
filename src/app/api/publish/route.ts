@@ -3,6 +3,16 @@ import { auth } from "@clerk/nextjs/server";
 import { saveSite, getSite, getSitesByUser, generateSlug, type SavedSite } from "@/lib/site-store";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import type { GeneratedSite } from "@/lib/generate-site";
+import { RESERVED_SLUGS, isValidSlug } from "@/lib/slug-rules";
+
+function esc(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
 
 const FREE_SITE_LIMIT = 1;
 
@@ -11,7 +21,7 @@ export const maxDuration = 15;
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIP(req);
-    const rl = await checkRateLimit(ip, "default");
+    const rl = await checkRateLimit(ip, "publish");
     if (!rl.success) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -44,7 +54,6 @@ export async function POST(req: NextRequest) {
       businessEmail: string;
       city: string;
       customSlug?: string;
-      plan?: "starter" | "pro" | "business";
     };
 
     if (!body.site || !body.businessName || !body.businessEmail) {
@@ -54,8 +63,8 @@ export async function POST(req: NextRequest) {
     let slug: string;
     if (body.customSlug) {
       const clean = body.customSlug.toLowerCase().trim();
-      if (!/^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$/.test(clean)) {
-        return NextResponse.json({ error: "Invalid subdomain format" }, { status: 400 });
+      if (!isValidSlug(clean) || RESERVED_SLUGS.has(clean)) {
+        return NextResponse.json({ error: "Invalid or reserved subdomain" }, { status: 400 });
       }
       const existing = await getSite(clean);
       if (existing) {
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
       businessEmail: body.businessEmail,
       businessName: body.businessName,
       userId,
-      plan: body.plan ?? "starter",
+      plan: "starter", // always server-assigned; never trust client
       status: "live",
       site: body.site,
     };
@@ -102,21 +111,18 @@ export async function POST(req: NextRequest) {
                 Your site is live!
               </h1>
               <p style="color:#6b7280;font-size:15px;margin:0 0 24px">
-                ${body.businessName} is now published and accessible to anyone on the internet.
+                ${esc(body.businessName)} is now published and accessible to anyone on the internet.
               </p>
-              <a href="${siteUrl}"
+              <a href="${esc(siteUrl)}"
                 style="display:inline-block;background:#2563eb;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px">
                 View your site →
               </a>
               <p style="margin-top:24px;color:#9ca3af;font-size:13px">
-                Your site URL: <a href="${siteUrl}" style="color:#2563eb">${siteUrl}</a>
+                Your site URL: <a href="${esc(siteUrl)}" style="color:#2563eb">${esc(siteUrl)}</a>
               </p>
               <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
               <p style="color:#6b7280;font-size:13px">
-                Want a custom domain like <strong>www.${body.businessName.toLowerCase().replace(/[^a-z0-9]/g, "")}.com</strong>?
-                <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/pricing" style="color:#2563eb">
-                  Upgrade to Pro →
-                </a>
+                Want a custom domain? <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/pricing" style="color:#2563eb">Upgrade to Pro →</a>
               </p>
               <p style="color:#9ca3af;font-size:12px;margin-top:16px">
                 — The Instant Local Business team
@@ -132,12 +138,12 @@ export async function POST(req: NextRequest) {
           subject: `New site published: ${body.businessName}`,
           html: `
             <div style="font-family:sans-serif;padding:16px">
-              <h2>${body.businessName}</h2>
-              <p>Email: ${body.businessEmail}</p>
-              <p>Plan: ${savedSite.plan}</p>
-              <p>Slug: ${slug}</p>
-              <p>URL: <a href="${siteSubdomain}">View site</a></p>
-              <p>Published: ${savedSite.publishedAt}</p>
+              <h2>${esc(body.businessName)}</h2>
+              <p>Email: ${esc(body.businessEmail)}</p>
+              <p>Plan: ${esc(savedSite.plan)}</p>
+              <p>Slug: ${esc(slug)}</p>
+              <p>URL: <a href="${esc(siteSubdomain)}">${esc(siteSubdomain)}</a></p>
+              <p>Published: ${esc(savedSite.publishedAt)}</p>
             </div>
           `,
         });
@@ -153,8 +159,7 @@ export async function POST(req: NextRequest) {
       url: siteSubdomain,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[/api/publish]", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[/api/publish]", err);
+    return NextResponse.json({ error: "Failed to publish site. Please try again." }, { status: 500 });
   }
 }

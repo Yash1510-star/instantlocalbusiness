@@ -82,8 +82,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[/api/contact]", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[/api/contact]", err);
+    return NextResponse.json({ error: "Failed to send message. Please try again." }, { status: 500 });
   }
 }

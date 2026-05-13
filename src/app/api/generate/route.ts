@@ -128,6 +128,8 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[/api/generate]", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Surface rate-limit / input-guard messages to the client; hide all other details
+    const isSafe = message.startsWith("RATE_LIMIT") || message.startsWith("INPUT_") || message.startsWith("AI returned");
+    return NextResponse.json({ error: isSafe ? message : "Site generation failed. Please try again." }, { status: 500 });
   }
 }

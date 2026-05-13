@@ -57,7 +57,7 @@ async function callOpenAI(messages: AIMessage[], model: string): Promise<AIRespo
     model,
     messages,
     temperature: 0.7,
-    max_tokens: 2000,
+    max_tokens: 4000,
   });
 
   const text = response.choices[0]?.message?.content ?? "";
@@ -88,7 +88,7 @@ async function callAnthropic(messages: AIMessage[], model: string): Promise<AIRe
 
   const response = await client.messages.create({
     model,
-    max_tokens: 2000,
+    max_tokens: 4000,
     system: systemMsg,
     messages: userMessages,
   });
@@ -122,7 +122,7 @@ async function callDeepSeek(messages: AIMessage[], model: string): Promise<AIRes
     model,
     messages,
     temperature: 0.7,
-    max_tokens: 2000,
+    max_tokens: 4000,
   });
 
   const text = response.choices[0]?.message?.content ?? "";
@@ -161,7 +161,7 @@ async function callGemini(messages: AIMessage[], model: string): Promise<AIRespo
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2000 },
+        generationConfig: { temperature: 0.7, maxOutputTokens: 4000 },
       }),
     }
   );

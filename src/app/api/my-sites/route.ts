@@ -11,7 +11,7 @@ export async function GET() {
     const sites = await getSitesByUser(userId);
     return NextResponse.json({ sites });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[/api/my-sites]", err);
+    return NextResponse.json({ error: "Failed to load sites." }, { status: 500 });
   }
 }

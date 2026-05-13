@@ -13,19 +13,25 @@
  *
  * Each layout supports:
  *  • Dynamic color palettes (8 curated options)
- *  • Inline text editing (headline, tagline, CTA)
+ *  • Inline text editing (headline, tagline, CTA, service title + description)
  *  • Hero image upload (replace with own photo)
+ *  • Per-service photo upload, add new service, delete service
  */
 
 import { useState, useRef, type ChangeEvent } from "react";
 import {
   Phone, MapPin, Clock, CheckCircle2, Upload, Palette,
   ChevronDown, Star, ArrowRight, Zap, Shield, Award,
+  Pencil, Trash2, Plus, X, Check,
 } from "lucide-react";
 import type { GeneratedSite } from "@/lib/generate-site";
 
-// ─── Photo URL helper — handles Unsplash IDs, Unsplash URLs, Pexels, Pixabay ─
+type ServiceItem = GeneratedSite["services"][number] & { _photo?: string };
+
+// ─── Photo URL helper — handles Unsplash IDs, Unsplash URLs, Pexels, Pixabay, data URLs ─
 function photoUrl(ref: string, w: number, h: number) {
+  // User-uploaded data URL — use as-is, never transform
+  if (ref.startsWith("data:")) return ref;
   if (!ref.startsWith("http")) {
     // Legacy Unsplash photo ID (static fallback table)
     return `https://images.unsplash.com/${ref}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -52,7 +58,10 @@ export type Palette = {
   badge: string;         // trust pill classes
   hero: string;          // hero overlay gradient
   navBg: string;
+  navText: string;       // nav brand/title text color
+  navLink: string;       // nav link text + hover
   sectionAlt: string;    // alternating section bg
+  sectionBorder: string; // divider color between sections
   tag: string;           // small tag/chip
 };
 
@@ -62,7 +71,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-amber-500", primaryText: "text-gray-950", primaryHover: "hover:bg-amber-400",
     accent: "text-amber-400", badge: "bg-amber-500/20 text-amber-300 border border-amber-500/30",
     hero: "from-gray-950 via-gray-900/80 to-transparent",
-    navBg: "bg-gray-950/90", sectionAlt: "bg-gray-900",
+    navBg: "bg-gray-950/90", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-gray-900", sectionBorder: "border-white/5",
     tag: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
   },
   {
@@ -70,7 +80,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-blue-500", primaryText: "text-white", primaryHover: "hover:bg-blue-400",
     accent: "text-blue-400", badge: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
     hero: "from-slate-950 via-blue-950/60 to-transparent",
-    navBg: "bg-slate-950/90", sectionAlt: "bg-slate-900",
+    navBg: "bg-slate-950/90", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-slate-900", sectionBorder: "border-white/5",
     tag: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
   },
   {
@@ -78,7 +89,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-rose-500", primaryText: "text-white", primaryHover: "hover:bg-rose-400",
     accent: "text-rose-400", badge: "bg-rose-500/20 text-rose-300 border border-rose-500/30",
     hero: "from-neutral-950 via-rose-950/40 to-transparent",
-    navBg: "bg-neutral-950/90", sectionAlt: "bg-neutral-900",
+    navBg: "bg-neutral-950/90", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-neutral-900", sectionBorder: "border-white/5",
     tag: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
   },
   {
@@ -86,7 +98,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-emerald-500", primaryText: "text-gray-950", primaryHover: "hover:bg-emerald-400",
     accent: "text-emerald-400", badge: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30",
     hero: "from-gray-950 via-emerald-950/50 to-transparent",
-    navBg: "bg-gray-950/90", sectionAlt: "bg-gray-900",
+    navBg: "bg-gray-950/90", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-gray-900", sectionBorder: "border-white/5",
     tag: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
   },
   {
@@ -94,7 +107,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-violet-500", primaryText: "text-white", primaryHover: "hover:bg-violet-400",
     accent: "text-violet-400", badge: "bg-violet-500/20 text-violet-300 border border-violet-500/30",
     hero: "from-gray-950 via-violet-950/50 to-transparent",
-    navBg: "bg-gray-950/90", sectionAlt: "bg-gray-900",
+    navBg: "bg-gray-950/90", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-gray-900", sectionBorder: "border-white/5",
     tag: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
   },
   {
@@ -102,15 +116,17 @@ export const PALETTES: Palette[] = [
     primary: "bg-stone-700", primaryText: "text-white", primaryHover: "hover:bg-stone-600",
     accent: "text-stone-300", badge: "bg-stone-700/50 text-stone-300 border border-stone-600",
     hero: "from-stone-950 via-stone-900/70 to-transparent",
-    navBg: "bg-stone-950/90", sectionAlt: "bg-stone-900",
+    navBg: "bg-stone-950/90", navText: "text-white", navLink: "text-stone-400 hover:text-white",
+    sectionAlt: "bg-stone-900", sectionBorder: "border-white/5",
     tag: "bg-stone-700/20 text-stone-400 border border-stone-600/30",
   },
   {
     id: "mint",     name: "Mint & White",
     primary: "bg-teal-500", primaryText: "text-white", primaryHover: "hover:bg-teal-400",
-    accent: "text-teal-500", badge: "bg-teal-50 text-teal-700 border border-teal-200",
+    accent: "text-teal-600", badge: "bg-teal-50 text-teal-700 border border-teal-200",
     hero: "from-black/70 via-black/40 to-transparent",
-    navBg: "bg-white/95", sectionAlt: "bg-gray-50",
+    navBg: "bg-white/95", navText: "text-gray-900", navLink: "text-gray-500 hover:text-gray-900",
+    sectionAlt: "bg-gray-50", sectionBorder: "border-gray-100",
     tag: "bg-teal-50 text-teal-700 border border-teal-200",
   },
   {
@@ -118,7 +134,8 @@ export const PALETTES: Palette[] = [
     primary: "bg-white", primaryText: "text-gray-950", primaryHover: "hover:bg-gray-100",
     accent: "text-white", badge: "bg-white/10 text-white border border-white/20",
     hero: "from-black via-black/80 to-transparent",
-    navBg: "bg-black/95", sectionAlt: "bg-zinc-900",
+    navBg: "bg-black/95", navText: "text-white", navLink: "text-gray-400 hover:text-white",
+    sectionAlt: "bg-zinc-900", sectionBorder: "border-white/5",
     tag: "bg-white/5 text-white/70 border border-white/10",
   },
 ];
@@ -209,14 +226,212 @@ function ImageUploadOverlay({ onUpload }: { onUpload: (dataUrl: string) => void 
   };
   return (
     <>
-      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {/* Fixed position keeps the input outside any overflow-hidden ancestor so .click() always fires */}
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        onChange={handleChange}
+        style={{ position: "fixed", top: -9999, left: -9999, opacity: 0, pointerEvents: "none" }}
+      />
       <button
+        type="button"
         onClick={() => ref.current?.click()}
         className="absolute bottom-3 right-3 flex items-center gap-1.5 text-xs font-semibold bg-black/60 hover:bg-black/80 text-white border border-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm transition-colors z-10"
       >
         <Upload size={12} /> Upload photo
       </button>
     </>
+  );
+}
+
+// ─── Editable service card ────────────────────────────────────────────────────
+type ServiceCardVariant = "dark-row" | "dark-tile" | "light-card" | "light-row";
+
+function EditableServiceCard({
+  sv, photo, index, palette: p, variant, onUpdate, onDelete, onPhotoChange,
+}: {
+  sv: ServiceItem;
+  photo: string;
+  index: number;
+  palette: Palette;
+  variant: ServiceCardVariant;
+  onUpdate: (i: number, fields: Partial<ServiceItem>) => void;
+  onDelete: (i: number) => void;
+  onPhotoChange: (i: number, url: string) => void;
+}) {
+  const [hovering, setHovering] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { if (ev.target?.result) onPhotoChange(index, ev.target.result as string); };
+    reader.readAsDataURL(file);
+  };
+
+  // Edit bar — inline (not absolutely positioned) so overflow-hidden never blocks clicks
+  const editBar = (
+    <div className={`flex items-center gap-1 transition-opacity duration-150 ${hovering ? "opacity-100" : "opacity-50"}`}>
+      {/* Fixed position keeps input outside overflow-hidden ancestors */}
+      <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto}
+        style={{ position: "fixed", top: -9999, left: -9999, opacity: 0, pointerEvents: "none" }} />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        title="Replace photo"
+        className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-white transition-colors"
+      >
+        <Upload size={10} /> Photo
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(index)}
+        title="Remove service"
+        className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-red-600 hover:bg-red-700 text-white transition-colors"
+      >
+        <Trash2 size={10} /> Delete
+      </button>
+    </div>
+  );
+
+  if (variant === "dark-row") {
+    return (
+      <div
+        className="group bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 hover:border-white/10 transition-all overflow-hidden"
+        onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}
+      >
+        <div className="flex gap-4 p-4">
+          <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoUrl(photo, 160, 160)} alt={sv.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-base">{ICON_MAP[sv.icon ?? ""] ?? "🍽️"}</span>
+              {editingTitle
+                ? <input autoFocus value={sv.title} onChange={e => onUpdate(index, { title: e.target.value })} onBlur={() => setEditingTitle(false)} className="font-bold text-sm text-white bg-white/10 border border-white/30 rounded px-1 outline-none w-full" />
+                : <h3 className="font-bold text-sm text-white cursor-text flex items-center gap-1" onClick={() => setEditingTitle(true)}>{sv.title} <Pencil size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" /></h3>
+              }
+            </div>
+            {editingDesc
+              ? <textarea autoFocus value={sv.description} onChange={e => onUpdate(index, { description: e.target.value })} onBlur={() => setEditingDesc(false)} className="text-xs text-gray-300 bg-white/10 border border-white/30 rounded px-1 outline-none w-full resize-none" rows={2} />
+              : <p className="text-xs text-gray-400 leading-relaxed cursor-text" onClick={() => setEditingDesc(true)}>{sv.description}</p>
+            }
+          </div>
+        </div>
+        <div className="flex justify-end px-3 pb-2">{editBar}</div>
+      </div>
+    );
+  }
+
+  if (variant === "dark-tile") {
+    return (
+      <div
+        className="group rounded-2xl overflow-hidden bg-white/5"
+        onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}
+      >
+        <div className="relative aspect-square">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoUrl(photo, 500, 500)} alt={sv.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors" />
+          <div className="absolute inset-0 flex flex-col justify-end p-4">
+            {editingTitle
+              ? <input autoFocus value={sv.title} onChange={e => onUpdate(index, { title: e.target.value })} onBlur={() => setEditingTitle(false)} className="font-black text-sm text-white bg-white/10 border border-white/30 rounded px-1 outline-none w-full mb-1" />
+              : <h3 className="font-black text-sm text-white mb-1 cursor-text" onClick={() => setEditingTitle(true)}>{sv.title}</h3>
+            }
+            {editingDesc
+              ? <textarea autoFocus value={sv.description} onChange={e => onUpdate(index, { description: e.target.value })} onBlur={() => setEditingDesc(false)} className="text-xs text-white/70 bg-white/10 border border-white/20 rounded px-1 outline-none resize-none w-full" rows={2} />
+              : <p className="text-xs text-white/60 leading-snug cursor-text" onClick={() => setEditingDesc(true)}>{sv.description}</p>
+            }
+          </div>
+          <div className="absolute top-3 left-3 text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✦"}</div>
+        </div>
+        <div className="flex justify-end px-3 py-1.5 bg-black/30">{editBar}</div>
+      </div>
+    );
+  }
+
+  if (variant === "light-card") {
+    return (
+      <div
+        className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border border-gray-100"
+        onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}
+      >
+        <div className="relative h-44 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoUrl(photo, 500, 280)} alt={sv.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        </div>
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✨"}</span>
+            {editingTitle
+              ? <input autoFocus value={sv.title} onChange={e => onUpdate(index, { title: e.target.value })} onBlur={() => setEditingTitle(false)} className="font-bold text-sm text-gray-900 border border-gray-300 rounded px-1 outline-none w-full" />
+              : <h3 className="font-bold text-sm text-gray-900 cursor-text flex items-center gap-1" onClick={() => setEditingTitle(true)}>{sv.title} <Pencil size={10} className="opacity-0 group-hover:opacity-40 transition-opacity text-gray-400" /></h3>
+            }
+          </div>
+          {editingDesc
+            ? <textarea autoFocus value={sv.description} onChange={e => onUpdate(index, { description: e.target.value })} onBlur={() => setEditingDesc(false)} className="text-xs text-gray-500 border border-gray-200 rounded px-1 outline-none w-full resize-none" rows={2} />
+            : <p className="text-xs text-gray-500 leading-relaxed cursor-text" onClick={() => setEditingDesc(true)}>{sv.description}</p>
+          }
+          <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">{editBar}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // light-row (service layout)
+  return (
+    <div
+      className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all"
+      onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}
+    >
+      <div className="relative h-36 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photoUrl(photo, 400, 220)} alt={sv.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded-lg ${p.primary} ${p.primaryText}`}>
+          {ICON_MAP[sv.icon ?? ""] ?? "⚡"}
+        </div>
+      </div>
+      <div className="p-4">
+        {editingTitle
+          ? <input autoFocus value={sv.title} onChange={e => onUpdate(index, { title: e.target.value })} onBlur={() => setEditingTitle(false)} className="font-bold text-sm text-gray-900 border border-gray-200 rounded px-1 outline-none w-full mb-1" />
+          : <h3 className="font-bold text-sm text-gray-900 mb-1 cursor-text flex items-center gap-1" onClick={() => setEditingTitle(true)}>{sv.title} <Pencil size={10} className="opacity-0 group-hover:opacity-40 transition-opacity text-gray-400" /></h3>
+        }
+        {editingDesc
+          ? <textarea autoFocus value={sv.description} onChange={e => onUpdate(index, { description: e.target.value })} onBlur={() => setEditingDesc(false)} className="text-xs text-gray-500 border border-gray-200 rounded px-1 outline-none w-full resize-none" rows={2} />
+          : <p className="text-xs text-gray-500 leading-relaxed cursor-text" onClick={() => setEditingDesc(true)}>{sv.description}</p>
+        }
+        <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">{editBar}</div>
+      </div>
+    </div>
+  );
+}
+
+function AddServiceButton({ onAdd, dark }: { onAdd: () => void; dark?: boolean }) {
+  return (
+    <button
+      onClick={onAdd}
+      className={`flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed text-sm font-semibold transition-all min-h-[80px] ${
+        dark
+          ? "border-white/20 text-white/40 hover:border-white/50 hover:text-white/70 hover:bg-white/5"
+          : "border-gray-200 text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/50"
+      }`}
+    >
+      <Plus size={16} /> Add service
+    </button>
+  );
+}
+
+function ServiceEditHint({ dark }: { dark?: boolean }) {
+  return (
+    <p className={`text-xs text-center mb-3 ${dark ? "text-white/30" : "text-gray-400"}`}>
+      <Pencil size={10} className="inline mr-1 mb-0.5" />
+      Click any title or description to edit · hover a card to replace photo or delete
+    </p>
   );
 }
 
@@ -233,6 +448,12 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 // ═══════════════════════════════════════════════════════════════════════════════
 function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
   const light = isLightPalette(p);
@@ -240,17 +461,17 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
   return (
     <div className="font-sans bg-gray-950 text-white">
       {/* ── Nav ── */}
-      <nav className={`flex items-center justify-between px-6 py-4 ${p.navBg} backdrop-blur-md border-b border-white/5 sticky top-0 z-20`}>
+      <nav className={`flex items-center justify-between px-6 py-4 ${p.navBg} backdrop-blur-md border-b ${p.sectionBorder} sticky top-0 z-20`}>
         <div>
           <EditableText value={businessName} onChange={v => setS({...s, heroHeadline: v + ": " + s.heroHeadline.split(": ").slice(1).join(": ")})}
-            className="font-extrabold text-base text-white tracking-tight" />
+            className={`font-extrabold text-base tracking-tight ${p.navText}`} />
           <EditableText value={s.tagline} onChange={v => setS({...s, tagline: v})}
-            className="text-xs text-gray-400 mt-0.5 block" />
+            className={`text-xs mt-0.5 block ${p.navLink.split(" ")[0]}`} />
         </div>
         {!compact && (
           <div className="flex items-center gap-6 text-sm font-medium">
             {[{l:"About",id:"about"},{l:"Menu",id:"services"},{l:"Visit",id:"contact"}].map(({l,id}) => (
-              <button key={id} onClick={() => scrollTo(id)} className="text-gray-400 hover:text-white transition-colors">{l}</button>
+              <button key={id} onClick={() => scrollTo(id)} className={`${p.navLink} transition-colors`}>{l}</button>
             ))}
           </div>
         )}
@@ -294,11 +515,11 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
       </div>
 
       {/* ── Stats ── */}
-      <div className={`grid grid-cols-3 ${p.sectionAlt} border-b border-white/5`}>
+      <div className={`grid grid-cols-3 ${p.sectionAlt} border-b ${p.sectionBorder}`}>
         {s.stats.map(st => (
-          <div key={st.label} className="py-6 text-center border-r border-white/5 last:border-r-0">
+          <div key={st.label} className={`py-6 text-center border-r ${p.sectionBorder} last:border-r-0`}>
             <div className={`text-2xl font-extrabold ${p.accent}`}>{st.value}</div>
-            <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{st.label}</div>
+            <div className={`text-xs mt-1 uppercase tracking-wider ${p.navLink.split(" ")[0]}`}>{st.label}</div>
           </div>
         ))}
       </div>
@@ -309,23 +530,12 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
           <span className={`text-xs font-bold uppercase tracking-widest ${p.accent} mb-2 block`}>What We Serve</span>
           <h2 className="text-2xl font-extrabold text-white">{s.aboutTitle}</h2>
         </div>
+        {!compact && <ServiceEditHint dark />}
         <div className={`grid gap-4 ${compact ? "grid-cols-1" : "grid-cols-2"}`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="group flex gap-4 bg-white/5 hover:bg-white/8 rounded-2xl p-4 border border-white/5 hover:border-white/10 transition-all">
-              <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 160, 160)} alt={sv.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-base">{ICON_MAP[sv.icon ?? ""] ?? "🍽️"}</span>
-                  <h3 className="font-bold text-sm text-white">{sv.title}</h3>
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">{sv.description}</p>
-              </div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="dark-row" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} dark />}
         </div>
       </div>
 
@@ -383,6 +593,12 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
 // ═══════════════════════════════════════════════════════════════════════════════
 function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -470,23 +686,12 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
           <span className={`text-xs font-bold uppercase tracking-widest ${p.accent} mb-2 block`}>What We Do</span>
           <h2 className="text-2xl font-extrabold text-gray-900">Our Services</h2>
         </div>
+        {!compact && <ServiceEditHint />}
         <div className={`grid gap-4 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
-              <div className="relative h-36 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 220)} alt={sv.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                <div className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded-lg ${p.primary} ${p.primaryText}`}>
-                  {ICON_MAP[sv.icon ?? ""] ?? "⚡"}
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold text-sm text-gray-900 mb-1">{sv.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{sv.description}</p>
-              </div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="light-row" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} />}
         </div>
       </div>
 
@@ -534,6 +739,12 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
 // ═══════════════════════════════════════════════════════════════════════════════
 function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -618,24 +829,12 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
           <span className={`text-xs font-bold uppercase tracking-widest ${p.accent} mb-2 block`}>What We Offer</span>
           <h2 className="text-2xl font-extrabold text-gray-900">{s.aboutTitle}</h2>
         </div>
+        {!compact && <ServiceEditHint />}
         <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="relative h-44 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 400, 280)} alt={sv.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"/>
-              </div>
-              <div className="p-5 bg-white">
-                <h3 className="font-bold text-sm text-gray-900 mb-1.5">{sv.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-4">{sv.description}</p>
-                <button className={`text-xs font-bold px-4 py-2 rounded-full ${p.tag} transition-colors`}>
-                  Book Now →
-                </button>
-              </div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="light-card" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} />}
         </div>
       </div>
 
@@ -688,6 +887,12 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
 // ═══════════════════════════════════════════════════════════════════════════════
 function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -769,24 +974,12 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
           <span className={`text-xs font-bold uppercase tracking-widest ${p.accent} mb-2 block`}>Expertise</span>
           <h2 className="text-2xl font-extrabold text-gray-900">Practice Areas</h2>
         </div>
+        {!compact && <ServiceEditHint />}
         <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-6`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="flex gap-5 items-start group pb-6 border-b border-gray-100 last:border-0">
-              <span className="text-4xl font-extrabold text-gray-100 leading-none shrink-0 group-hover:text-gray-200 transition-colors">
-                {String(i+1).padStart(2,"0")}
-              </span>
-              <div className="flex gap-3">
-                <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 100, 100)} alt={sv.title} className="w-full h-full object-cover"/>
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-gray-900 mb-1">{sv.title}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{sv.description}</p>
-                </div>
-              </div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="light-card" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} />}
         </div>
       </div>
 
@@ -842,22 +1035,28 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
 // ═══════════════════════════════════════════════════════════════════════════════
 function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Studio";
 
   return (
     <div className="font-sans bg-black text-white">
       {/* Nav */}
-      <nav className={`flex items-center justify-between px-6 py-5 ${p.navBg} backdrop-blur-md sticky top-0 z-20 border-b border-white/5`}>
+      <nav className={`flex items-center justify-between px-6 py-5 ${p.navBg} backdrop-blur-md sticky top-0 z-20 border-b ${p.sectionBorder}`}>
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full ${p.primary}`} />
           <EditableText value={businessName} onChange={v => setS({...s, heroHeadline: v + s.heroHeadline.slice(s.heroHeadline.indexOf(":"))})}
-            className="font-black text-sm text-white tracking-tight uppercase" />
+            className={`font-black text-sm tracking-tight uppercase ${p.navText}`} />
         </div>
         {!compact && (
           <div className="flex items-center gap-8 text-xs font-bold uppercase tracking-widest">
             {[{l:"Work",id:"services"},{l:"Story",id:"about"},{l:"Contact",id:"contact"}].map(({l,id}) => (
-              <button key={id} onClick={() => scrollTo(id)} className="text-white/50 hover:text-white transition-colors">{l}</button>
+              <button key={id} onClick={() => scrollTo(id)} className={`${p.navLink} transition-colors`}>{l}</button>
             ))}
           </div>
         )}
@@ -905,20 +1104,12 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
           <div className={`text-xs font-black uppercase tracking-[0.25em] mb-3 ${p.accent}`}>What We Offer</div>
           <h2 className="text-3xl font-black text-white">{s.aboutTitle}</h2>
         </div>
+        {!compact && <ServiceEditHint dark />}
         <div className={`grid gap-3 ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="group relative overflow-hidden rounded-2xl aspect-square cursor-pointer">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 500, 500)} alt={sv.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors" />
-              <div className="absolute inset-0 flex flex-col justify-end p-4">
-                <h3 className="font-black text-sm text-white mb-1">{sv.title}</h3>
-                <p className="text-xs text-white/60 leading-snug hidden group-hover:block">{sv.description}</p>
-              </div>
-              <div className="absolute top-3 right-3 text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✦"}</div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="dark-tile" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} dark />}
         </div>
       </div>
 
@@ -980,23 +1171,29 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
 // ═══════════════════════════════════════════════════════════════════════════════
 function BoutiqueLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
   const [s, setS] = useState(site);
+  const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
+  const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
+  const updateSvc = (i: number, fields: Partial<ServiceItem>) => setSvcs(prev => prev.map((v, idx) => idx === i ? { ...v, ...fields } : v));
+  const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
+  const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
+  const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Boutique";
 
   return (
     <div className="font-sans bg-gray-50 text-gray-900">
       {/* Nav */}
-      <nav className={`flex items-center justify-between px-6 py-4 ${p.navBg} backdrop-blur-md border-b border-gray-100 sticky top-0 z-20`}>
+      <nav className={`flex items-center justify-between px-6 py-4 ${p.navBg} backdrop-blur-md border-b ${p.sectionBorder} sticky top-0 z-20`}>
         <div>
           <EditableText value={businessName} onChange={v => setS({...s, heroHeadline: v + s.heroHeadline.slice(s.heroHeadline.indexOf(":"))})}
-            className="font-black text-base text-gray-900 tracking-tight" />
+            className={`font-black text-base tracking-tight ${p.navText}`} />
           <EditableText value={s.tagline} onChange={v => setS({...s, tagline: v})}
-            className="text-xs text-gray-400 mt-0.5 block italic" />
+            className={`text-xs mt-0.5 block italic ${p.navLink.split(" ")[0]}`} />
         </div>
         {!compact && (
           <div className="flex items-center gap-7 text-sm">
             {[{l:"Services",id:"services"},{l:"About",id:"about"},{l:"Book",id:"contact"}].map(({l,id}) => (
-              <button key={id} onClick={() => scrollTo(id)} className="text-gray-400 hover:text-gray-900 transition-colors font-medium">{l}</button>
+              <button key={id} onClick={() => scrollTo(id)} className={`${p.navLink} transition-colors font-medium`}>{l}</button>
             ))}
           </div>
         )}
@@ -1043,23 +1240,12 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
           <div className={`text-xs font-bold uppercase tracking-widest mb-2 ${p.accent}`}>Our Services</div>
           <h2 className="text-2xl font-black text-gray-900">{s.aboutTitle}</h2>
         </div>
+        {!compact && <ServiceEditHint />}
         <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
-          {s.services.map((sv, i) => (
-            <div key={sv.title} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border border-gray-100">
-              <div className="relative h-44 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 500, 280)} alt={sv.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✨"}</span>
-                  <h3 className="font-bold text-sm text-gray-900">{sv.title}</h3>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed">{sv.description}</p>
-              </div>
-            </div>
+          {svcs.map((sv, i) => (
+            <EditableServiceCard key={i} sv={sv} photo={svcPhotos[i] ?? svcPhotos[0] ?? ""} index={i} palette={p} variant="light-card" onUpdate={updateSvc} onDelete={deleteSvc} onPhotoChange={updateSvcPhoto} />
           ))}
+          {!compact && <AddServiceButton onAdd={addSvc} />}
         </div>
       </div>
 
