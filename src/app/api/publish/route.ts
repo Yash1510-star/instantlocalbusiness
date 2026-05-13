@@ -67,12 +67,17 @@ export async function POST(req: NextRequest) {
     await saveSite(savedSite);
     console.log(`[publish] Saved site slug="${slug}" kvReady=${!!((process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) && (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN))}`);
 
+    const rootDomain = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com")
+      .replace(/^https?:\/\//, "")
+      .replace(/\/$/, "");
+    const siteSubdomain = `https://${slug}.${rootDomain}`;
+
     // Send confirmation email if Resend is configured
     if (process.env.RESEND_API_KEY) {
       try {
         const { Resend: ResendClient } = await import("resend");
         const resend = new ResendClient(process.env.RESEND_API_KEY);
-        const siteUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/sites/${slug}`;
+        const siteUrl = siteSubdomain;
 
         await resend.emails.send({
           from: "noreply@instantlocalbusiness.com",
@@ -118,7 +123,7 @@ export async function POST(req: NextRequest) {
               <p>Email: ${body.businessEmail}</p>
               <p>Plan: ${savedSite.plan}</p>
               <p>Slug: ${slug}</p>
-              <p>URL: <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/sites/${slug}">View site</a></p>
+              <p>URL: <a href="${siteSubdomain}">View site</a></p>
               <p>Published: ${savedSite.publishedAt}</p>
             </div>
           `,
@@ -132,7 +137,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       slug,
-      url: `/sites/${slug}`,
+      url: siteSubdomain,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -31,7 +31,9 @@ export default function DashboardPage() {
     );
   }
 
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://instantlocalbusiness.com";
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_SITE_URL || "https://instantlocalbusiness.com")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -148,7 +150,7 @@ export default function DashboardPage() {
 
               <div className="flex gap-2">
                 <a
-                  href={`${SITE_URL}/sites/${s.slug}`}
+                  href={`https://${s.slug}.${ROOT_DOMAIN}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 py-2 rounded-lg transition-colors"

@@ -156,7 +156,13 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function getSite(slug: string): Promise<SavedSite | null> {
-  if (kvReady()) return kvGet(`site:${slug}`);
+  if (kvReady()) {
+    const result = await kvGet(`site:${slug}`);
+    if (result) return result;
+    // Fall back to local file store (useful during local dev when site was saved to disk)
+    if (process.env.NODE_ENV !== "production") return fileGet(slug);
+    return null;
+  }
   return fileGet(slug);
 }
 
@@ -184,7 +190,7 @@ export function generateSlug(businessName: string, city: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 60);
-  const suffix = Date.now().toString().slice(-10);
+    .slice(0, 48); // max 48 + "-" + 4 = 53 chars — well under DNS 63-char label limit
+  const suffix = Math.floor(1000 + Math.random() * 9000).toString();
   return `${base}-${suffix}`;
 }

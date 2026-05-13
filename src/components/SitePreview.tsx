@@ -539,7 +539,7 @@ export function SitePreview({ slug }: { slug: string }) {
 
   // Display name for toolbar
   const displayName = aiSite
-    ? slug.replace(/-\d{10,}$/, "").split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+    ? slug.replace(/-\d{4}$/, "").split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
     : staticTemplate.name;
 
   const handlePublish = async () => {
@@ -698,7 +698,7 @@ export function SitePreview({ slug }: { slug: string }) {
                 rel="noopener noreferrer"
                 className="font-bold underline hover:text-green-100"
               >
-                instantlocalbusiness.com{publishedUrl}
+                {publishedUrl.replace(/^https?:\/\//, "")}
               </a>
             </span>
             <Link
