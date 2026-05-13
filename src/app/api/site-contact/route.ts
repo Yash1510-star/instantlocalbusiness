@@ -23,11 +23,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { slug, name, contact, message } = await req.json() as {
+    const { slug, name, contact, message, mode, date, time, partySize } = await req.json() as {
       slug: string;
       name: string;
       contact: string;
       message?: string;
+      mode?: string;
+      date?: string;
+      time?: string;
+      partySize?: string;
     };
 
     if (!slug?.trim() || !name?.trim() || !contact?.trim()) {
@@ -47,18 +51,43 @@ export async function POST(req: NextRequest) {
 
     const siteUrl = `https://${esc(slug)}.instantlocalbusiness.com`;
 
+    const isBooking = mode === "appointment" || mode === "reservation";
+    const subjectLabel = mode === "reservation" ? "New reservation request" :
+                         mode === "appointment" ? "New appointment request" :
+                         "New lead";
+
+    const bookingRows = isBooking ? `
+      ${date ? `<tr>
+        <td style="padding:8px 0;color:#6b7280;width:120px;vertical-align:top">Date</td>
+        <td style="padding:8px 0;font-weight:600;color:#111">${esc(date)}</td>
+      </tr>` : ""}
+      ${time ? `<tr>
+        <td style="padding:8px 0;color:#6b7280;vertical-align:top">Time</td>
+        <td style="padding:8px 0;font-weight:600;color:#111">${esc(time)}</td>
+      </tr>` : ""}
+      ${mode === "reservation" && partySize ? `<tr>
+        <td style="padding:8px 0;color:#6b7280;vertical-align:top">Party size</td>
+        <td style="padding:8px 0;font-weight:600;color:#111">${esc(partySize)} ${parseInt(partySize) === 1 ? "guest" : "guests"}</td>
+      </tr>` : ""}
+    ` : "";
+
+    const headerColor = mode === "reservation" ? "#7c3aed" : mode === "appointment" ? "#0ea5e9" : "#22c55e";
+    const headerBg   = mode === "reservation" ? "#f5f3ff" : mode === "appointment" ? "#f0f9ff" : "#f0fdf4";
+    const headerText = mode === "reservation" ? "#5b21b6" : mode === "appointment" ? "#0369a1" : "#15803d";
+    const emoji      = mode === "reservation" ? "🗓️" : mode === "appointment" ? "📅" : "🎉";
+
     const { ok, error } = await sendEmail({
       to: saved.businessEmail,
       replyTo: contact.includes("@") ? contact : undefined,
-      subject: `New lead from your website — ${esc(name)}`,
+      subject: `${subjectLabel} from your website — ${esc(name)}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff">
-          <div style="background:#f0fdf4;border-left:4px solid #22c55e;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:24px">
-            <p style="margin:0;font-size:14px;color:#15803d;font-weight:600">
-              🎉 New lead from your website!
+          <div style="background:${headerBg};border-left:4px solid ${headerColor};padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:24px">
+            <p style="margin:0;font-size:14px;color:${headerText};font-weight:600">
+              ${emoji} ${subjectLabel} from your website!
             </p>
           </div>
-          <h2 style="margin:0 0 16px;font-size:20px;color:#111">New Enquiry — ${esc(saved.businessName)}</h2>
+          <h2 style="margin:0 0 16px;font-size:20px;color:#111">${subjectLabel} — ${esc(saved.businessName)}</h2>
           <table style="width:100%;border-collapse:collapse;font-size:14px">
             <tr>
               <td style="padding:8px 0;color:#6b7280;width:120px;vertical-align:top">Name</td>
@@ -68,9 +97,10 @@ export async function POST(req: NextRequest) {
               <td style="padding:8px 0;color:#6b7280;vertical-align:top">Contact</td>
               <td style="padding:8px 0;color:#111">${esc(contact)}</td>
             </tr>
+            ${bookingRows}
             ${message?.trim() ? `
             <tr>
-              <td style="padding:8px 0;color:#6b7280;vertical-align:top">Message</td>
+              <td style="padding:8px 0;color:#6b7280;vertical-align:top">Notes</td>
               <td style="padding:8px 0;color:#111">${esc(message)}</td>
             </tr>` : ""}
           </table>

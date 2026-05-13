@@ -424,13 +424,19 @@ function EditableServiceCard({
 function getPublicSlug(): string {
   if (typeof window === "undefined") return "";
   const host = window.location.hostname;
-  // Subdomain format: slug.instantlocalbusiness.com
   const parts = host.split(".");
   if (parts.length >= 3 && host.includes("instantlocalbusiness.com")) return parts[0];
-  // Local dev /sites/[slug]
   const m = window.location.pathname.match(/^\/sites\/([^/]+)/);
   return m?.[1] ?? "";
 }
+
+type ContactMode = "contact" | "appointment" | "reservation";
+
+const TIME_SLOTS = [
+  "9:00 AM", "10:00 AM", "11:00 AM",
+  "1:00 PM",  "2:00 PM",  "3:00 PM", "4:00 PM",
+  "5:00 PM",  "6:00 PM",
+];
 
 function ContactForm({
   ctaButtonLabel,
@@ -438,26 +444,35 @@ function ContactForm({
   dark = false,
   rounded = "rounded-xl",
   buttonClass,
+  mode = "contact",
 }: {
   ctaButtonLabel: string;
   ctaFormPlaceholder: string;
   dark?: boolean;
   rounded?: string;
   buttonClass?: string;
+  mode?: ContactMode;
 }) {
-  const [form, setForm] = useState({ name: "", contact: "", message: "" });
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
+
+  const [form, setForm] = useState({ name: "", contact: "", message: "", date: "", time: "", partySize: "2" });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errMsg, setErrMsg] = useState("");
 
+  const isBooking = mode === "appointment" || mode === "reservation";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isBooking && !form.time) return;
     const slug = getPublicSlug();
     setStatus("submitting");
     try {
       const res = await fetch("/api/site-contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, ...form }),
+        body: JSON.stringify({ slug, mode, ...form }),
       });
       if (!res.ok) throw new Error(((await res.json()) as { error: string }).error ?? "Failed");
       setStatus("success");
@@ -469,19 +484,19 @@ function ContactForm({
   }
 
   const inputBase = `w-full px-4 py-3 ${rounded} text-base font-sans focus:outline-none focus:ring-2`;
-  // Solid white bg, visible gray border, dark text — readable on any layout background
   const inputClass = `${inputBase} bg-white text-gray-900 placeholder-gray-400 border border-gray-300 focus:border-blue-400 focus:ring-blue-100`;
-
-  const defaultBtn = dark
-    ? `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`
-    : `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`;
+  const defaultBtn = `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors`;
 
   if (status === "success") {
     return (
-      <div className="text-center py-6">
-        <CheckCircle2 size={28} className="text-green-400 mx-auto mb-2" />
-        <p className="font-semibold text-sm text-white">Message sent!</p>
-        <p className="text-xs mt-1 text-white/60">We&apos;ll get back to you shortly.</p>
+      <div className="text-center py-8">
+        <CheckCircle2 size={32} className="text-green-400 mx-auto mb-3" />
+        <p className="font-semibold text-base text-white">
+          {isBooking ? "Request received!" : "Message sent!"}
+        </p>
+        <p className="text-xs mt-1 text-white/60">
+          {isBooking ? "We\u2019ll confirm your appointment shortly." : "We\u2019ll get back to you shortly."}
+        </p>
       </div>
     );
   }
@@ -502,22 +517,77 @@ function ContactForm({
         placeholder="Phone or email"
         className={inputClass}
       />
-      <input
+
+      {isBooking && (
+        <>
+          <input
+            required
+            type="date"
+            min={minDate}
+            value={form.date}
+            onChange={e => setForm(f => ({ ...f, date: e.target.value, time: "" }))}
+            className={inputClass}
+          />
+          {form.date && (
+            <div>
+              <p className="text-xs font-semibold mb-2 text-gray-400 uppercase tracking-wide">Pick a time</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {TIME_SLOTS.map(slot => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, time: slot }))}
+                    className={`py-2 text-xs font-semibold rounded-lg border transition-all ${
+                      form.time === slot
+                        ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50"
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {mode === "reservation" && (
+            <select
+              value={form.partySize}
+              onChange={e => setForm(f => ({ ...f, partySize: e.target.value }))}
+              className={inputClass}
+            >
+              {[1,2,3,4,5,6,7,8,10,12].map(n => (
+                <option key={n} value={String(n)}>{n} {n === 1 ? "guest" : "guests"}</option>
+              ))}
+            </select>
+          )}
+        </>
+      )}
+
+      <textarea
+        rows={isBooking ? 2 : 3}
         value={form.message}
         onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-        placeholder={ctaFormPlaceholder || "How can we help?"}
-        className={inputClass}
+        placeholder={
+          mode === "appointment" ? "Any special requests? (optional)" :
+          mode === "reservation" ? "Special occasion or dietary needs? (optional)" :
+          ctaFormPlaceholder || "How can we help?"
+        }
+        className={`${inputClass} resize-none`}
       />
-      {status === "error" && (
-        <p className="text-red-400 text-xs">{errMsg}</p>
-      )}
+
+      {status === "error" && <p className="text-red-400 text-xs">{errMsg}</p>}
+
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={status === "submitting" || (isBooking && !!form.date && !form.time)}
         className={buttonClass ?? defaultBtn}
       >
         {status === "submitting" ? "Sending…" : ctaButtonLabel}
       </button>
+
+      {isBooking && form.date && !form.time && (
+        <p className="text-xs text-center opacity-50 text-gray-300">Select a time slot above to continue</p>
+      )}
     </form>
   );
 }
@@ -694,6 +764,7 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero, onSite
             ctaButtonLabel={s.ctaButtonLabel}
             ctaFormPlaceholder={s.ctaFormPlaceholder}
             dark
+            mode="reservation"
             buttonClass="w-full font-bold py-3 rounded-xl text-sm bg-gray-950 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors"
           />
         </div>
@@ -994,6 +1065,7 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
             ctaButtonLabel={s.ctaButtonLabel}
             ctaFormPlaceholder={s.ctaFormPlaceholder}
             dark
+            mode="appointment"
             rounded="rounded-full"
             buttonClass="w-full font-bold py-3 rounded-full text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors"
           />
@@ -1146,6 +1218,7 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero, onSit
             ctaButtonLabel={s.ctaButtonLabel}
             ctaFormPlaceholder={s.ctaFormPlaceholder}
             dark
+            mode="appointment"
             buttonClass={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 transition-colors`}
           />
         </div>
@@ -1290,6 +1363,7 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
             ctaButtonLabel={s.ctaButtonLabel}
             ctaFormPlaceholder={s.ctaFormPlaceholder}
             dark
+            mode="appointment"
             rounded="rounded-full"
             buttonClass={`w-full font-black uppercase tracking-wider py-4 rounded-full text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 hover:scale-105 transition-all`}
           />
@@ -1419,6 +1493,7 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
           <ContactForm
             ctaButtonLabel={s.ctaButtonLabel}
             ctaFormPlaceholder={s.ctaFormPlaceholder}
+            mode="appointment"
             buttonClass={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 transition-colors shadow-md`}
           />
           <div className="mt-6 flex flex-col gap-2">
