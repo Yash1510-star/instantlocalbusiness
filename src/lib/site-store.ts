@@ -159,6 +159,23 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
   await writeFile(filePath, JSON.stringify(all, null, 2));
 }
 
+async function kvScanAllSites(): Promise<SavedSite[]> {
+  const keys: string[] = [];
+  let cursor = "0";
+  do {
+    const res = await fetch(
+      `${kvBase()}/scan/${cursor}/match/site:*/count/200`,
+      { headers: { Authorization: `Bearer ${kvToken()}` }, cache: "no-store" }
+    );
+    if (!res.ok) break;
+    const json = await res.json() as { result: [string, string[]] };
+    cursor = json.result[0];
+    keys.push(...json.result[1]);
+  } while (cursor !== "0");
+  const sites = await Promise.all(keys.map(k => kvGet(k)));
+  return sites.filter((s): s is SavedSite => s !== null);
+}
+
 async function kvDelete(key: string): Promise<void> {
   await fetch(`${kvBase()}/del/${encodeURIComponent(key)}`, {
     method: "POST",
@@ -196,6 +213,23 @@ export async function saveSite(data: SavedSite): Promise<void> {
     return;
   }
   return fileSet(data.slug, data);
+}
+
+export async function getAllSites(): Promise<SavedSite[]> {
+  if (kvReady()) return kvScanAllSites();
+  const all = await fileGetAll();
+  return Object.values(all);
+}
+
+export async function updateSite(slug: string, patch: Partial<Pick<SavedSite, "status" | "plan">>): Promise<void> {
+  const site = await getSite(slug);
+  if (!site) return;
+  const updated: SavedSite = { ...site, ...patch };
+  if (kvReady()) {
+    await kvSet(`site:${slug}`, updated);
+    return;
+  }
+  await fileSet(slug, updated);
 }
 
 export async function deleteSite(slug: string): Promise<void> {

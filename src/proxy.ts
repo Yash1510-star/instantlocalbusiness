@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { RESERVED_SLUGS } from "@/lib/slug-rules";
 
-const isProtected = createRouteMatcher(["/dashboard(.*)", "/api/my-sites(.*)", "/api/publish(.*)"]);
+const isProtected = createRouteMatcher(["/dashboard(.*)", "/admin(.*)", "/api/my-sites(.*)", "/api/publish(.*)", "/api/admin(.*)"]);
 
 // Use shared canonical reserved list from slug-rules
 const RESERVED = RESERVED_SLUGS;
