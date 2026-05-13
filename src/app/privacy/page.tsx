@@ -36,7 +36,7 @@ const sections = [
   },
   {
     title: "Contact",
-    body: `Questions about this policy? Contact our privacy team at privacy@instantlocalbusiness.com or by mail at InstantLocalBusiness.com, New York, NY.`,
+    body: `Questions about this policy? Contact our privacy team at privacy@instantlocalbusiness.com or by mail at InstantLocalBusiness.com, Columbus, OH.`,
   },
 ];
 

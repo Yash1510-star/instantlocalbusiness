@@ -44,7 +44,7 @@ const sections = [
   },
   {
     title: "10. Governing Law",
-    body: `These terms are governed by the laws of the State of New York, USA. Any disputes shall be resolved through binding arbitration in New York, NY, except that either party may seek injunctive relief in court for intellectual property violations.`,
+    body: `These terms are governed by the laws of the State of Ohio, USA. Any disputes shall be resolved through binding arbitration in Columbus, OH, except that either party may seek injunctive relief in court for intellectual property violations.`,
   },
 ];
 

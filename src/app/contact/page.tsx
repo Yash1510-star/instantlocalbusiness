@@ -85,7 +85,7 @@ export default function ContactPage() {
                   <MapPin size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-gray-900">Headquarters</p>
-                    <p className="text-sm text-gray-500">New York, NY</p>
+                    <p className="text-sm text-gray-500">Columbus, OH</p>
                   </div>
                 </div>
               </div>
