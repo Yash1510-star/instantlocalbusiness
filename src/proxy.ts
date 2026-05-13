@@ -26,6 +26,10 @@ export const proxy = clerkMiddleware(async (auth, req) => {
   const tenantSlug = getTenantSlug(host);
 
   if (tenantSlug) {
+    // API calls from tenant subdomains must pass through to their actual routes
+    if (req.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.next();
+    }
     // Rewrite subdomain requests to /sites/[slug] — the App Router page handles the rest
     const url = req.nextUrl.clone();
     url.pathname = `/sites/${tenantSlug}`;
