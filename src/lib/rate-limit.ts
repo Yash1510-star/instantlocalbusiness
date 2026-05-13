@@ -11,7 +11,7 @@
  * Limits:
  *   /api/generate  — 3 site builds per IP per day     ($0.009 max cost/IP/day)
  *   /api/publish   — 5 publishes per IP per day
- *   /api/contact   — 5 submissions per IP per hour
+ *   /api/contact   — 30 submissions per IP per hour
  */
 
 export type RateLimitResult = {
@@ -28,7 +28,7 @@ type RouteConfig = {
 const ROUTE_CONFIGS: Record<string, RouteConfig> = {
   generate: { limit: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10/day per IP (raise to 3 after testing)
   publish:  { limit: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10/day per IP
-  contact:  { limit: 5,  windowMs: 60 * 60 * 1000       }, // 5/hour per IP
+  contact:  { limit: 30, windowMs: 60 * 60 * 1000       }, // 30/hour per IP
   default:  { limit: 20, windowMs: 60 * 60 * 1000       },
 };
 
