@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * AISiteRenderer — Modern, new-age layouts for AI-generated sites.
+ * AISiteRenderer — Modern, industry-specific layouts for AI-generated sites.
  *
- * 4 layout variants:
+ * 6 layout variants:
  *  • hospitality  — restaurants, cafes, bakeries (lifestyle-brand vibes)
  *  • service      — plumbers, electricians, auto (bold, trust-first)
  *  • wellness     — salons, dental, gym, spa (clean, soft, editorial)
  *  • professional — law, accounting, real estate (premium, minimal)
+ *  • creative     — dance studios, photography, florists (bold, gallery-forward, dark)
+ *  • boutique     — nail salon, massage, pet grooming (light, elegant, luxury feel)
  *
  * Each layout supports:
  *  • Dynamic color palettes (8 curated options)
@@ -834,6 +836,283 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATIVE LAYOUT — Dance Studios, Photography, Florists
+// Full-bleed dark hero, bold centered typography, image mosaic gallery
+// ═══════════════════════════════════════════════════════════════════════════════
+function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+  const [s, setS] = useState(site);
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const businessName = s.heroHeadline.split(":")[0] || "Studio";
+
+  return (
+    <div className="font-sans bg-black text-white">
+      {/* Nav */}
+      <nav className={`flex items-center justify-between px-6 py-5 ${p.navBg} backdrop-blur-md sticky top-0 z-20 border-b border-white/5`}>
+        <div className="flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${p.primary}`} />
+          <EditableText value={businessName} onChange={v => setS({...s, heroHeadline: v + s.heroHeadline.slice(s.heroHeadline.indexOf(":"))})}
+            className="font-black text-sm text-white tracking-tight uppercase" />
+        </div>
+        {!compact && (
+          <div className="flex items-center gap-8 text-xs font-bold uppercase tracking-widest">
+            {[{l:"Work",id:"services"},{l:"Story",id:"about"},{l:"Contact",id:"contact"}].map(({l,id}) => (
+              <button key={id} onClick={() => scrollTo(id)} className="text-white/50 hover:text-white transition-colors">{l}</button>
+            ))}
+          </div>
+        )}
+        <button className={`text-xs font-black uppercase tracking-wider px-5 py-2 rounded-full ${p.primary} ${p.primaryText} ${p.primaryHover} transition-all`}>
+          {compact ? "Book" : s.primaryCta}
+        </button>
+      </nav>
+
+      {/* Full-bleed hero — giant centered text */}
+      <div className="relative overflow-hidden" style={{height: compact ? 380 : 620}}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={customHero ?? photoUrl(s.heroPhoto, 1600, 800)} alt="hero"
+          className="absolute inset-0 w-full h-full object-cover scale-105" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className={`absolute inset-0 bg-gradient-to-b ${p.hero} opacity-70`} />
+        <ImageUploadOverlay onUpload={setCustomHero} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <div className={`text-xs font-black uppercase tracking-[0.3em] mb-6 ${p.accent}`}>{s.heroBadge}</div>
+          <EditableText value={s.heroHeadline} onChange={v => setS({...s, heroHeadline: v})}
+            className="block text-4xl sm:text-6xl font-black text-white leading-none mb-5 max-w-3xl tracking-tight" multiline />
+          <EditableText value={s.heroSubheadline} onChange={v => setS({...s, heroSubheadline: v})}
+            className="block text-sm text-white/60 mb-8 max-w-md" multiline />
+          <div className="flex gap-4 justify-center">
+            <button className={`font-black uppercase tracking-wider px-8 py-3.5 rounded-full text-xs ${p.primary} ${p.primaryText} ${p.primaryHover} transition-all hover:scale-105`}>
+              {s.primaryCta}
+            </button>
+            <button onClick={() => scrollTo("services")} className="font-bold uppercase tracking-wider px-8 py-3.5 rounded-full text-xs border border-white/30 text-white/80 hover:bg-white/10 transition-all">
+              {s.secondaryCta}
+            </button>
+          </div>
+        </div>
+        <div className={`absolute bottom-0 left-0 right-0 h-1 ${p.primary} opacity-80`} />
+      </div>
+
+      {/* Trust strip */}
+      <div className="bg-zinc-950 border-b border-white/5 py-3 px-6 flex items-center justify-center gap-8 overflow-hidden">
+        {s.trustPoints.map(pt => (
+          <span key={pt} className={`text-xs font-bold uppercase tracking-widest shrink-0 ${p.accent}`}>✦ {pt}</span>
+        ))}
+      </div>
+
+      {/* Image mosaic */}
+      <div id="services" className="bg-zinc-950 px-6 py-14">
+        <div className="text-center mb-10">
+          <div className={`text-xs font-black uppercase tracking-[0.25em] mb-3 ${p.accent}`}>What We Offer</div>
+          <h2 className="text-3xl font-black text-white">{s.aboutTitle}</h2>
+        </div>
+        <div className={`grid gap-3 ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+          {s.services.map((sv, i) => (
+            <div key={sv.title} className="group relative overflow-hidden rounded-2xl aspect-square cursor-pointer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 500, 500)} alt={sv.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors" />
+              <div className="absolute inset-0 flex flex-col justify-end p-4">
+                <h3 className="font-black text-sm text-white mb-1">{sv.title}</h3>
+                <p className="text-xs text-white/60 leading-snug hidden group-hover:block">{sv.description}</p>
+              </div>
+              <div className="absolute top-3 right-3 text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✦"}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className={`${p.primary} py-6 px-6 grid grid-cols-3`}>
+        {s.stats.map(st => (
+          <div key={st.label} className="text-center">
+            <div className={`text-2xl font-black ${p.primaryText}`}>{st.value}</div>
+            <div className={`text-xs uppercase tracking-widest mt-1 opacity-70 ${p.primaryText}`}>{st.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* About */}
+      <div id="about" className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"} bg-zinc-950`}>
+        <div className="relative overflow-hidden" style={{minHeight: 320}}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoUrl(s.servicePhotos[1] ?? s.heroPhoto, 800, 600)} alt="about"
+            className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
+        <div className="flex flex-col justify-center px-8 py-12">
+          <div className={`text-xs font-black uppercase tracking-[0.25em] mb-4 ${p.accent}`}>Our Story</div>
+          <EditableText value={s.aboutTitle} onChange={v => setS({...s, aboutTitle: v})}
+            className="block text-2xl font-black text-white mb-5 leading-tight" />
+          <EditableText value={s.aboutBody} onChange={v => setS({...s, aboutBody: v})}
+            className="block text-sm text-white/60 leading-relaxed" multiline />
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div id="contact" className="bg-black px-8 py-14 text-center">
+        <div className={`text-xs font-black uppercase tracking-[0.25em] mb-4 ${p.accent}`}>Let&apos;s Connect</div>
+        <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
+          className="block text-3xl font-black text-white mb-3" />
+        <p className="text-sm text-white/50 mb-8 max-w-sm mx-auto">{s.ctaBody}</p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
+          {[{I:Phone,v:s.phone},{I:MapPin,v:s.address},{I:Clock,v:s.hours}].map(({I,v}) => (
+            <div key={v} className="flex items-center gap-2 text-sm text-white/50">
+              <I size={14} className={p.accent}/> {v}
+            </div>
+          ))}
+        </div>
+        <button className={`font-black uppercase tracking-wider px-10 py-4 rounded-full text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} hover:scale-105 transition-all`}>
+          {s.ctaButtonLabel}
+        </button>
+      </div>
+
+      <footer className="px-6 py-5 bg-zinc-950 border-t border-white/5 text-center text-xs text-white/20">
+        © {new Date().getFullYear()} {businessName}. All rights reserved. · Powered by InstantLocalBusiness.com
+      </footer>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BOUTIQUE LAYOUT — Nail Salon, Massage Therapy, Pet Grooming
+// Light, elegant, luxury personal-care feel with soft floating cards
+// ═══════════════════════════════════════════════════════════════════════════════
+function BoutiqueLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+  const [s, setS] = useState(site);
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const businessName = s.heroHeadline.split(":")[0] || "Boutique";
+
+  return (
+    <div className="font-sans bg-gray-50 text-gray-900">
+      {/* Nav */}
+      <nav className={`flex items-center justify-between px-6 py-4 ${p.navBg} backdrop-blur-md border-b border-gray-100 sticky top-0 z-20`}>
+        <div>
+          <EditableText value={businessName} onChange={v => setS({...s, heroHeadline: v + s.heroHeadline.slice(s.heroHeadline.indexOf(":"))})}
+            className="font-black text-base text-gray-900 tracking-tight" />
+          <EditableText value={s.tagline} onChange={v => setS({...s, tagline: v})}
+            className="text-xs text-gray-400 mt-0.5 block italic" />
+        </div>
+        {!compact && (
+          <div className="flex items-center gap-7 text-sm">
+            {[{l:"Services",id:"services"},{l:"About",id:"about"},{l:"Book",id:"contact"}].map(({l,id}) => (
+              <button key={id} onClick={() => scrollTo(id)} className="text-gray-400 hover:text-gray-900 transition-colors font-medium">{l}</button>
+            ))}
+          </div>
+        )}
+        <button className={`text-xs font-bold px-5 py-2 rounded-full ${p.primary} ${p.primaryText} ${p.primaryHover} transition-all shadow-sm`}>
+          {compact ? "Book" : "Book Now"}
+        </button>
+      </nav>
+
+      {/* Split hero */}
+      <div className={`grid ${compact ? "grid-cols-1" : "grid-cols-2"}`} style={{minHeight: compact ? 280 : 480}}>
+        <div className="relative overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={customHero ?? photoUrl(s.heroPhoto, 900, 600)} alt="hero"
+            className="absolute inset-0 w-full h-full object-cover" />
+          <ImageUploadOverlay onUpload={setCustomHero} />
+        </div>
+        <div className="flex flex-col justify-center px-10 py-12 bg-white">
+          <span className={`inline-block text-xs font-bold px-3 py-1.5 rounded-full mb-5 w-fit ${p.badge}`}>{s.heroBadge}</span>
+          <EditableText value={s.heroHeadline} onChange={v => setS({...s, heroHeadline: v})}
+            className="block text-3xl font-black text-gray-900 leading-tight mb-4 max-w-sm" multiline />
+          <EditableText value={s.heroSubheadline} onChange={v => setS({...s, heroSubheadline: v})}
+            className="block text-sm text-gray-500 mb-7 max-w-xs leading-relaxed" multiline />
+          <div className="flex gap-3 flex-wrap">
+            <button className={`font-bold px-6 py-3 rounded-full text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5`}>
+              {s.primaryCta}
+            </button>
+            <button className="font-semibold px-6 py-3 rounded-full text-sm border-2 border-gray-200 text-gray-600 hover:border-gray-400 transition-all">
+              {s.secondaryCta}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust pills */}
+      <div className="bg-white border-y border-gray-100 py-4 px-6 flex items-center justify-center gap-4 flex-wrap">
+        {s.trustPoints.map(pt => (
+          <span key={pt} className={`text-xs font-semibold px-4 py-1.5 rounded-full ${p.badge}`}>✓ {pt}</span>
+        ))}
+      </div>
+
+      {/* Service cards */}
+      <div id="services" className="px-6 py-14 bg-gray-50">
+        <div className="text-center mb-10">
+          <div className={`text-xs font-bold uppercase tracking-widest mb-2 ${p.accent}`}>Our Services</div>
+          <h2 className="text-2xl font-black text-gray-900">{s.aboutTitle}</h2>
+        </div>
+        <div className={`grid gap-5 ${compact ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+          {s.services.map((sv, i) => (
+            <div key={sv.title} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border border-gray-100">
+              <div className="relative h-44 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photoUrl(s.servicePhotos[i] ?? s.servicePhotos[0], 500, 280)} alt={sv.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">{ICON_MAP[sv.icon ?? ""] ?? "✨"}</span>
+                  <h3 className="font-bold text-sm text-gray-900">{sv.title}</h3>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">{sv.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className={`${p.primary} grid grid-cols-3 py-8`}>
+        {s.stats.map(st => (
+          <div key={st.label} className="text-center border-r last:border-r-0 border-white/20">
+            <div className={`text-2xl font-black ${p.primaryText}`}>{st.value}</div>
+            <div className={`text-xs mt-1 uppercase tracking-wider opacity-75 ${p.primaryText}`}>{st.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* About */}
+      <div id="about" className="bg-white px-8 py-14 max-w-3xl mx-auto text-center">
+        <div className={`text-xs font-bold uppercase tracking-widest mb-3 ${p.accent}`}>Our Philosophy</div>
+        <EditableText value={s.aboutTitle} onChange={v => setS({...s, aboutTitle: v})}
+          className="block text-2xl font-black text-gray-900 mb-5" />
+        <EditableText value={s.aboutBody} onChange={v => setS({...s, aboutBody: v})}
+          className="block text-sm text-gray-500 leading-relaxed italic" multiline />
+      </div>
+
+      {/* Booking CTA */}
+      <div id="contact" className="bg-gray-50 px-8 py-14">
+        <div className="max-w-lg mx-auto bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+          <div className={`text-xs font-bold uppercase tracking-widest mb-3 text-center ${p.accent}`}>Reserve Your Spot</div>
+          <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
+            className="block text-xl font-black text-gray-900 mb-2 text-center" />
+          <p className="text-xs text-gray-400 mb-6 text-center">{s.ctaBody}</p>
+          <div className="space-y-3">
+            <input placeholder="Your name" className="w-full px-4 py-3 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none" readOnly />
+            <input placeholder="Phone or email" className="w-full px-4 py-3 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none" readOnly />
+            <button className={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} transition-colors shadow-md`}>
+              {s.ctaButtonLabel}
+            </button>
+          </div>
+          <div className="mt-6 flex flex-col gap-2">
+            {[{I:Phone,v:s.phone},{I:MapPin,v:s.address},{I:Clock,v:s.hours}].map(({I,v}) => (
+              <div key={v} className="flex items-center gap-2 text-xs text-gray-400">
+                <I size={13} className={p.accent}/> {v}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <footer className="px-6 py-5 bg-white border-t border-gray-100 text-center text-xs text-gray-400">
+        © {new Date().getFullYear()} {businessName}. All rights reserved. · Powered by InstantLocalBusiness.com
+      </footer>
+    </div>
+  );
+}
+
 // ─── Shared props type ────────────────────────────────────────────────────────
 type LayoutProps = {
   site: GeneratedSite;
@@ -865,6 +1144,8 @@ export function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact
           case "service":      return <ServiceLayout {...sharedProps} />;
           case "wellness":     return <WellnessLayout {...sharedProps} />;
           case "professional": return <ProfessionalLayout {...sharedProps} />;
+          case "creative":     return <CreativeLayout {...sharedProps} />;
+          case "boutique":     return <BoutiqueLayout {...sharedProps} />;
           default:             return <WellnessLayout {...sharedProps} />;
         }
       })()}

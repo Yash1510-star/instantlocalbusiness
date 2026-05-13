@@ -30,6 +30,7 @@ const categories = [
   "Florist",
   "Tutoring",
   "Childcare / Daycare",
+  "Dance Studio / Classes",
   "Other",
 ];
 

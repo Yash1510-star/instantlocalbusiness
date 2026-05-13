@@ -44,7 +44,7 @@ export type BusinessInput = {
  * professional  — Law, accounting, real estate, photography, insurance
  *                 Clean navy/white, authority-forward, "Free Consultation"
  */
-export type LayoutVariant = "hospitality" | "service" | "wellness" | "professional";
+export type LayoutVariant = "hospitality" | "service" | "wellness" | "professional" | "creative" | "boutique";
 
 export type ColorScheme = {
   primary: string;    // Tailwind bg class e.g. "bg-orange-600"
@@ -205,15 +205,6 @@ const CATEGORY_LAYOUT: Record<string, { layout: LayoutVariant; colorScheme: Colo
       badge: "bg-violet-50 text-violet-700 border border-violet-200",
     },
   },
-  "Pet Grooming": {
-    layout: "wellness",
-    colorScheme: {
-      primary: "bg-pink-500", primaryHover: "hover:bg-pink-600",
-      primaryText: "text-white", accent: "text-pink-400",
-      heroBg: "bg-neutral-950", navBg: "bg-neutral-950/90",
-      badge: "bg-pink-500/20 text-pink-300 border border-pink-500/30",
-    },
-  },
   "Law Firm": {
     layout: "professional",
     colorScheme: {
@@ -242,21 +233,21 @@ const CATEGORY_LAYOUT: Record<string, { layout: LayoutVariant; colorScheme: Colo
     },
   },
   "Photography": {
-    layout: "professional",
+    layout: "creative",
     colorScheme: {
-      primary: "bg-neutral-800", primaryHover: "hover:bg-neutral-900",
-      primaryText: "text-white", accent: "text-neutral-300",
+      primary: "bg-neutral-100", primaryHover: "hover:bg-white",
+      primaryText: "text-gray-900", accent: "text-neutral-300",
       heroBg: "bg-black", navBg: "bg-black/90",
-      badge: "bg-neutral-700/50 text-neutral-300 border border-neutral-600",
+      badge: "bg-white/10 text-white border border-white/20",
     },
   },
   "Florist": {
-    layout: "hospitality",
+    layout: "creative",
     colorScheme: {
-      primary: "bg-rose-500", primaryHover: "hover:bg-rose-600",
-      primaryText: "text-white", accent: "text-rose-400",
+      primary: "bg-rose-400", primaryHover: "hover:bg-rose-300",
+      primaryText: "text-white", accent: "text-rose-300",
       heroBg: "bg-rose-950", navBg: "bg-rose-950/90",
-      badge: "bg-rose-500/20 text-rose-300 border border-rose-500/30",
+      badge: "bg-rose-400/20 text-rose-200 border border-rose-400/30",
     },
   },
   "Catering": {
@@ -305,21 +296,39 @@ const CATEGORY_LAYOUT: Record<string, { layout: LayoutVariant; colorScheme: Colo
     },
   },
   "Massage Therapy": {
-    layout: "wellness",
+    layout: "boutique",
     colorScheme: {
-      primary: "bg-stone-700", primaryHover: "hover:bg-stone-800",
-      primaryText: "text-white", accent: "text-stone-300",
-      heroBg: "bg-stone-950", navBg: "bg-stone-950/90",
-      badge: "bg-stone-700/40 text-stone-300 border border-stone-600",
+      primary: "bg-stone-700", primaryHover: "hover:bg-stone-600",
+      primaryText: "text-white", accent: "text-stone-500",
+      heroBg: "bg-stone-50", navBg: "bg-white/95",
+      badge: "bg-stone-100 text-stone-600 border border-stone-200",
     },
   },
   "Nail Salon": {
-    layout: "wellness",
+    layout: "boutique",
     colorScheme: {
       primary: "bg-fuchsia-500", primaryHover: "hover:bg-fuchsia-600",
-      primaryText: "text-white", accent: "text-fuchsia-400",
-      heroBg: "bg-neutral-950", navBg: "bg-neutral-950/90",
-      badge: "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30",
+      primaryText: "text-white", accent: "text-fuchsia-500",
+      heroBg: "bg-fuchsia-50", navBg: "bg-white/95",
+      badge: "bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200",
+    },
+  },
+  "Pet Grooming": {
+    layout: "boutique",
+    colorScheme: {
+      primary: "bg-pink-500", primaryHover: "hover:bg-pink-600",
+      primaryText: "text-white", accent: "text-pink-500",
+      heroBg: "bg-pink-50", navBg: "bg-white/95",
+      badge: "bg-pink-50 text-pink-700 border border-pink-200",
+    },
+  },
+  "Dance Studio / Classes": {
+    layout: "creative",
+    colorScheme: {
+      primary: "bg-violet-500", primaryHover: "hover:bg-violet-400",
+      primaryText: "text-white", accent: "text-violet-300",
+      heroBg: "bg-fuchsia-950", navBg: "bg-fuchsia-950/90",
+      badge: "bg-violet-400/20 text-violet-300 border border-violet-400/30",
     },
   },
 };
@@ -559,10 +568,12 @@ function buildPrompt(input: BusinessInput): string {
   const { layout } = getCategoryConfig(input.category);
 
   const layoutGuidance: Record<LayoutVariant, string> = {
-    hospitality: "Focus on appetite appeal, ambiance, and experience. CTAs should be 'Order Now', 'Reserve a Table', 'View Menu'. Trust points emphasize freshness, local ingredients, family recipes.",
-    service:     "Focus on reliability, speed, and expertise. CTAs should be 'Get a Free Quote', 'Call Now', 'Book Online'. Trust points emphasize 24/7 availability, licensed/insured, fast response.",
-    wellness:    "Focus on transformation, care, and results. CTAs should be 'Book Now', 'Schedule Appointment', 'Get Started'. Trust points emphasize certified staff, gentle approach, proven results.",
+    hospitality:  "Focus on appetite appeal, ambiance, and experience. CTAs should be 'Order Now', 'Reserve a Table', 'View Menu'. Trust points emphasize freshness, local ingredients, family recipes.",
+    service:      "Focus on reliability, speed, and expertise. CTAs should be 'Get a Free Quote', 'Call Now', 'Book Online'. Trust points emphasize 24/7 availability, licensed/insured, fast response.",
+    wellness:     "Focus on transformation, care, and results. CTAs should be 'Book Now', 'Schedule Appointment', 'Get Started'. Trust points emphasize certified staff, gentle approach, proven results.",
     professional: "Focus on expertise, trust, and outcomes. CTAs should be 'Free Consultation', 'Talk to an Expert', 'Get Started'. Trust points emphasize years of experience, credentials, client outcomes.",
+    creative:     "Focus on artistic identity, passion, and visual storytelling. CTAs should be 'Book a Class', 'View Portfolio', 'Schedule a Session'. Trust points emphasize artistic excellence, years of training, community, joy.",
+    boutique:     "Focus on luxury, self-care, and personalized attention. CTAs should be 'Book an Appointment', 'Treat Yourself', 'Reserve Your Spot'. Trust points emphasize premium products, expert hands, relaxing environment.",
   };
 
   const extraContext = [
@@ -636,6 +647,78 @@ Write specifically for ${input.category} in ${input.city}, ${input.state}.
 Use the ${layout} tone throughout. Make every word count.`;
 }
 
+// ─── Smart photo query builders ──────────────────────────────────────────────
+
+const STOP_WORDS = new Set([
+  "we","our","the","a","an","and","or","in","is","are","to","of","for","with",
+  "your","that","this","have","has","been","will","can","all","also","its",
+  "from","they","their","them","was","were","be","by","at","on","as","it",
+  "not","but","so","if","do","get","use","new","best","great","local","top",
+]);
+
+/** Builds a rich hero image query from business details. */
+function buildHeroQuery(input: BusinessInput, opts?: { omitCity?: boolean }): string {
+  const parts: string[] = [];
+
+  // Specialties/style are the most visually specific signal
+  if (input.specialties) {
+    const words = input.specialties
+      .replace(/[^a-zA-Z\s]/g, " ")
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !STOP_WORDS.has(w.toLowerCase()))
+      .slice(0, 4);
+    if (words.length) parts.push(words.join(" "));
+  }
+
+  // Pull distinctive nouns from the description (skip stop words)
+  if (input.description && parts.length < 2) {
+    const descWords = input.description
+      .replace(/[^a-zA-Z\s]/g, " ")
+      .split(/\s+/)
+      .filter(w => w.length > 4 && !STOP_WORDS.has(w.toLowerCase()))
+      .slice(0, 5)
+      .join(" ");
+    if (descWords) parts.push(descWords);
+  }
+
+  // Primary industry term (first segment before "/" or space)
+  const industryTerm = input.category.split(/[/,]/)[0].trim();
+  if (!parts.join(" ").toLowerCase().includes(industryTerm.toLowerCase().split(/\s/)[0])) {
+    parts.unshift(industryTerm);
+  }
+
+  if (!opts?.omitCity) parts.push(input.city);
+
+  return parts.join(" ").replace(/\s+/g, " ").slice(0, 80).trim();
+}
+
+/** Builds a service-photos query using AI-generated service titles. */
+function buildServiceQuery(services: Array<{ title: string }>, input: BusinessInput): string {
+  const industryTerm = input.category.split(/[/,]/)[0].trim().toLowerCase();
+
+  // Use top service titles as search terms — much more specific than just the category
+  const serviceTerms = services
+    .slice(0, 4)
+    .map(sv =>
+      sv.title
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, "")
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !STOP_WORDS.has(w))
+        .slice(0, 3)
+        .join(" ")
+        .trim()
+    )
+    .filter(t => t.length > 2)
+    .join(" ");
+
+  const combined = serviceTerms
+    ? `${serviceTerms} ${industryTerm}`
+    : input.category;
+
+  return combined.replace(/\s+/g, " ").slice(0, 80).trim();
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export async function generateSiteContent(input: BusinessInput): Promise<GeneratedSite> {
@@ -668,24 +751,35 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
   });
   const { layout, colorScheme } = exactMatch ?? fuzzyMatch?.[1] ?? DEFAULT_LAYOUT;
 
-  // Try dynamic Unsplash search first (requires UNSPLASH_ACCESS_KEY).
-  // Use category + city for the hero so images feel location-specific,
-  // and category alone for service cards (city would over-restrict results).
-  const heroQuery   = `${input.category} ${input.city}`;
-  const serviceQuery = input.category;
+  // Build smart photo queries from actual business details rather than bare category+city.
+  const heroQuery   = buildHeroQuery(input);
+  const serviceQuery = buildServiceQuery(parsed.services, input);
 
   const [heroResults, serviceResults] = await Promise.all([
     fetchPhotos(heroQuery, 1),
     fetchPhotos(serviceQuery, 6),
   ]);
 
-  // If city-specific hero returned nothing, retry with category only
+  // Hero fallback: drop city, keep descriptive terms
+  const heroFallbackQuery = buildHeroQuery(input, { omitCity: true });
   const heroResultsFinal = heroResults.length > 0
     ? heroResults
-    : await fetchPhotos(serviceQuery, 1);
+    : await fetchPhotos(heroFallbackQuery, 1);
 
-  console.log(`[photos] hero query="${heroQuery}" → ${heroResults.length} results, fallback-query results: ${heroResultsFinal.length}`);
-  console.log(`[photos] service query="${serviceQuery}" → ${serviceResults.length} results:`, serviceResults);
+  // Service fallback: if single combined query returned < 3, fetch per-service in parallel
+  let serviceResultsFinal = serviceResults;
+  if (serviceResults.length < 3) {
+    const perServiceResults = await Promise.all(
+      parsed.services.slice(0, 6).map(sv =>
+        fetchPhotos(`${sv.title} ${input.category.split("/")[0].trim()}`, 1)
+      )
+    );
+    const perService = perServiceResults.map(r => r[0]).filter((u): u is string => !!u);
+    if (perService.length > serviceResults.length) serviceResultsFinal = perService;
+  }
+
+  console.log(`[photos] hero query="${heroQuery}" → ${heroResults.length} results, fallback=${heroFallbackQuery}`);
+  console.log(`[photos] service query="${serviceQuery}" → ${serviceResultsFinal.length} results:`, serviceResultsFinal);
 
   // Fall back to the static table when the API key is absent or returns nothing
   const exactPhotos = CATEGORY_PHOTOS[input.category];
@@ -696,8 +790,8 @@ export async function generateSiteContent(input: BusinessInput): Promise<Generat
   const staticPhotos = exactPhotos ?? fuzzyPhotos?.[1] ?? DEFAULT_PHOTOS;
 
   const heroPhoto     = heroResultsFinal[0]  ?? staticPhotos.hero;
-  const servicePhotos = serviceResults.length >= 3
-    ? serviceResults
+  const servicePhotos = serviceResultsFinal.length >= 3
+    ? serviceResultsFinal
     : staticPhotos.services;
 
   const photoSource = heroResultsFinal.length
