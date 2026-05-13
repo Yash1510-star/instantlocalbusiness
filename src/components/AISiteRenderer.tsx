@@ -420,6 +420,111 @@ function EditableServiceCard({
   );
 }
 
+// ─── Contact form (functional on public sites) ────────────────────────────────
+function getPublicSlug(): string {
+  if (typeof window === "undefined") return "";
+  const host = window.location.hostname;
+  // Subdomain format: slug.instantlocalbusiness.com
+  const parts = host.split(".");
+  if (parts.length >= 3 && host.includes("instantlocalbusiness.com")) return parts[0];
+  // Local dev /sites/[slug]
+  const m = window.location.pathname.match(/^\/sites\/([^/]+)/);
+  return m?.[1] ?? "";
+}
+
+function ContactForm({
+  ctaButtonLabel,
+  ctaFormPlaceholder,
+  dark = false,
+  rounded = "rounded-xl",
+  buttonClass,
+}: {
+  ctaButtonLabel: string;
+  ctaFormPlaceholder: string;
+  dark?: boolean;
+  rounded?: string;
+  buttonClass?: string;
+}) {
+  const [form, setForm] = useState({ name: "", contact: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errMsg, setErrMsg] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const slug = getPublicSlug();
+    setStatus("submitting");
+    try {
+      const res = await fetch("/api/site-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, ...form }),
+      });
+      if (!res.ok) throw new Error(((await res.json()) as { error: string }).error ?? "Failed");
+      setStatus("success");
+    } catch (err) {
+      setErrMsg(err instanceof Error ? err.message : "Failed to send");
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 5000);
+    }
+  }
+
+  const inputBase = `w-full px-4 py-2.5 ${rounded} text-sm focus:outline-none focus:ring-1`;
+  const inputClass = dark
+    ? `${inputBase} bg-white/10 text-white placeholder-white/40 border border-white/20 focus:ring-white/30`
+    : `${inputBase} bg-white text-gray-800 placeholder-gray-400 border border-gray-200 focus:ring-blue-300`;
+
+  const defaultBtn = dark
+    ? `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`
+    : `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`;
+
+  if (status === "success") {
+    return (
+      <div className="text-center py-6">
+        <CheckCircle2 size={28} className="text-green-400 mx-auto mb-2" />
+        <p className={`font-semibold text-sm ${dark ? "text-white" : "text-gray-800"}`}>Message sent!</p>
+        <p className={`text-xs mt-1 ${dark ? "text-white/50" : "text-gray-400"}`}>
+          We&apos;ll get back to you shortly.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <input
+        required
+        value={form.name}
+        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+        placeholder="Your name"
+        className={inputClass}
+      />
+      <input
+        required
+        value={form.contact}
+        onChange={e => setForm(f => ({ ...f, contact: e.target.value }))}
+        placeholder="Phone or email"
+        className={inputClass}
+      />
+      <input
+        value={form.message}
+        onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+        placeholder={ctaFormPlaceholder || "How can we help?"}
+        className={inputClass}
+      />
+      {status === "error" && (
+        <p className="text-red-400 text-xs">{errMsg}</p>
+      )}
+      <button
+        type="submit"
+        disabled={status === "submitting"}
+        className={buttonClass ?? defaultBtn}
+      >
+        {status === "submitting" ? "Sending…" : ctaButtonLabel}
+      </button>
+    </form>
+  );
+}
+
 function AddServiceButton({ onAdd, dark }: { onAdd: () => void; dark?: boolean }) {
   const readonly = useContext(ReadonlyCtx);
   if (readonly) return null;
@@ -587,11 +692,13 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero, onSite
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
           className={`block text-xl font-extrabold mb-2 ${p.primaryText}`} />
         <p className={`text-sm mb-6 opacity-75 ${p.primaryText}`}>{s.ctaBody}</p>
-        <div className="max-w-sm mx-auto flex gap-3">
-          <input placeholder="Name or number" className="flex-1 px-4 py-3 rounded-xl text-sm text-gray-800 bg-white/95 focus:outline-none" readOnly />
-          <button className={`font-bold px-5 py-3 rounded-xl text-sm bg-gray-950 text-white hover:bg-gray-800 whitespace-nowrap`}>
-            {s.ctaButtonLabel}
-          </button>
+        <div className="max-w-sm mx-auto">
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            dark
+            buttonClass="w-full font-bold py-3 rounded-xl text-sm bg-gray-950 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors"
+          />
         </div>
       </div>
 
@@ -734,14 +841,11 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero, onSiteChan
           <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
             className={`block text-lg font-extrabold mb-2 ${p.primaryText}`} />
           <p className={`text-xs mb-5 opacity-75 ${p.primaryText}`}>{s.ctaBody}</p>
-          <div className="space-y-3">
-            <input placeholder="Your name" className="w-full px-4 py-2.5 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-            <input placeholder="Phone number" className="w-full px-4 py-2.5 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-            <input placeholder={s.ctaFormPlaceholder} className="w-full px-4 py-2.5 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-            <button className="w-full font-bold py-3 rounded-xl text-sm bg-gray-900 text-white hover:bg-gray-800 transition-colors">
-              {s.ctaButtonLabel}
-            </button>
-          </div>
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            dark
+          />
         </div>
       </div>
 
@@ -888,11 +992,14 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
           className={`block text-2xl font-extrabold mb-2 ${p.primaryText}`} />
         <p className={`text-sm opacity-75 mb-6 ${p.primaryText}`}>{s.ctaBody}</p>
-        <div className="max-w-sm mx-auto flex gap-3">
-          <input placeholder="Name or number" className="flex-1 px-4 py-3 rounded-full text-sm text-gray-800 bg-white focus:outline-none shadow-inner" readOnly/>
-          <button className="font-bold px-6 py-3 rounded-full text-sm bg-gray-900 text-white hover:bg-gray-800 transition-colors whitespace-nowrap">
-            {s.ctaButtonLabel}
-          </button>
+        <div className="max-w-sm mx-auto">
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            dark
+            rounded="rounded-full"
+            buttonClass="w-full font-bold py-3 rounded-full text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors"
+          />
         </div>
       </div>
 
@@ -1037,13 +1144,13 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero, onSit
         <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
           className="block text-2xl font-extrabold text-gray-900 mb-2" />
         <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">{s.ctaBody}</p>
-        <div className="max-w-md mx-auto bg-slate-900 rounded-2xl p-6 text-left space-y-3">
-          <input placeholder="Full name" className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-          <input placeholder="Email or phone" className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-          <input placeholder={s.ctaFormPlaceholder} className="w-full px-4 py-3 rounded-xl text-sm text-gray-800 bg-white focus:outline-none" readOnly />
-          <button className={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} transition-colors`}>
-            {s.ctaButtonLabel}
-          </button>
+        <div className="max-w-md mx-auto bg-slate-900 rounded-2xl p-6 text-left">
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            dark
+            buttonClass={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 transition-colors`}
+          />
         </div>
       </div>
 
@@ -1181,9 +1288,15 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
             </div>
           ))}
         </div>
-        <button className={`font-black uppercase tracking-wider px-10 py-4 rounded-full text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} hover:scale-105 transition-all`}>
-          {s.ctaButtonLabel}
-        </button>
+        <div className="max-w-sm mx-auto w-full">
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            dark
+            rounded="rounded-full"
+            buttonClass={`w-full font-black uppercase tracking-wider py-4 rounded-full text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 hover:scale-105 transition-all`}
+          />
+        </div>
       </div>
 
       <footer className="px-6 py-5 bg-zinc-950 border-t border-white/5 text-center text-xs text-white/20">
@@ -1306,13 +1419,11 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero, onSiteCha
           <EditableText value={s.ctaHeading} onChange={v => setS({...s, ctaHeading: v})}
             className="block text-xl font-black text-gray-900 mb-2 text-center" />
           <p className="text-xs text-gray-400 mb-6 text-center">{s.ctaBody}</p>
-          <div className="space-y-3">
-            <input placeholder="Your name" className="w-full px-4 py-3 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none" readOnly />
-            <input placeholder="Phone or email" className="w-full px-4 py-3 rounded-xl text-sm border border-gray-200 bg-gray-50 focus:outline-none" readOnly />
-            <button className={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} transition-colors shadow-md`}>
-              {s.ctaButtonLabel}
-            </button>
-          </div>
+          <ContactForm
+            ctaButtonLabel={s.ctaButtonLabel}
+            ctaFormPlaceholder={s.ctaFormPlaceholder}
+            buttonClass={`w-full font-bold py-3.5 rounded-xl text-sm ${p.primary} ${p.primaryText} ${p.primaryHover} disabled:opacity-60 transition-colors shadow-md`}
+          />
           <div className="mt-6 flex flex-col gap-2">
             {[{I:Phone,v:s.phone},{I:MapPin,v:s.address},{I:Clock,v:s.hours}].map(({I,v}) => (
               <div key={v} className="flex items-center gap-2 text-xs text-gray-400">
