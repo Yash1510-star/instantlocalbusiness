@@ -18,7 +18,7 @@
  *  • Per-service photo upload, add new service, delete service
  */
 
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import {
   Phone, MapPin, Clock, CheckCircle2, Upload, Palette,
   ChevronDown, Star, ArrowRight, Zap, Shield, Award,
