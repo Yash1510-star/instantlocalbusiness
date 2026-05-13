@@ -468,10 +468,9 @@ function ContactForm({
     }
   }
 
-  const inputBase = `w-full px-4 py-2.5 ${rounded} text-sm focus:outline-none focus:ring-1`;
-  const inputClass = dark
-    ? `${inputBase} bg-white/10 text-white placeholder-white/40 border border-white/20 focus:ring-white/30`
-    : `${inputBase} bg-white text-gray-800 placeholder-gray-400 border border-gray-200 focus:ring-blue-300`;
+  const inputBase = `w-full px-4 py-2.5 ${rounded} text-sm focus:outline-none focus:ring-2`;
+  // Always use solid white bg + dark text so the typed value is always readable
+  const inputClass = `${inputBase} bg-white text-gray-900 placeholder-gray-400 border border-white/30 focus:ring-blue-400`;
 
   const defaultBtn = dark
     ? `w-full font-bold py-3 ${rounded} text-sm bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-60 transition-colors`
@@ -481,10 +480,8 @@ function ContactForm({
     return (
       <div className="text-center py-6">
         <CheckCircle2 size={28} className="text-green-400 mx-auto mb-2" />
-        <p className={`font-semibold text-sm ${dark ? "text-white" : "text-gray-800"}`}>Message sent!</p>
-        <p className={`text-xs mt-1 ${dark ? "text-white/50" : "text-gray-400"}`}>
-          We&apos;ll get back to you shortly.
-        </p>
+        <p className="font-semibold text-sm text-white">Message sent!</p>
+        <p className="text-xs mt-1 text-white/60">We&apos;ll get back to you shortly.</p>
       </div>
     );
   }
