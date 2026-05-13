@@ -160,26 +160,31 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
 }
 
 async function kvScanAllSites(): Promise<SavedSite[]> {
+  // Use pipeline to avoid URL-encoding issues with the * wildcard in path segments
   const keys: string[] = [];
   let cursor = "0";
   do {
-    const res = await fetch(
-      `${kvBase()}/scan/${cursor}/match/site:*/count/200`,
-      { headers: { Authorization: `Bearer ${kvToken()}` }, cache: "no-store" }
-    );
+    const res = await fetch(`${kvBase()}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${kvToken()}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["SCAN", cursor, "MATCH", "site:*", "COUNT", "200"]]),
+      cache: "no-store",
+    });
     if (!res.ok) break;
-    const json = await res.json() as { result: [string, string[]] };
-    cursor = json.result[0];
-    keys.push(...json.result[1]);
+    const json = await res.json() as [{ result: [string, string[]] }];
+    const [nextCursor, batch] = json[0].result;
+    cursor = nextCursor;
+    keys.push(...batch);
   } while (cursor !== "0");
   const sites = await Promise.all(keys.map(k => kvGet(k)));
   return sites.filter((s): s is SavedSite => s !== null);
 }
 
 async function kvDelete(key: string): Promise<void> {
-  await fetch(`${kvBase()}/del/${encodeURIComponent(key)}`, {
+  await fetch(`${kvBase()}/pipeline`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${kvToken()}` },
+    headers: { Authorization: `Bearer ${kvToken()}`, "Content-Type": "application/json" },
+    body: JSON.stringify([["DEL", key]]),
   });
 }
 
