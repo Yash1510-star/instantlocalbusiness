@@ -185,12 +185,34 @@ export async function getSitesByUser(userId: string): Promise<SavedSite[]> {
   return Object.values(all).filter((s) => s.userId === userId);
 }
 
-export function generateSlug(businessName: string, city: string): string {
-  const base = `${businessName} ${city}`
+function toSlugPart(text: string, maxLen = 40): string {
+  return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 48); // max 48 + "-" + 4 = 53 chars — well under DNS 63-char label limit
-  const suffix = Math.floor(1000 + Math.random() * 9000).toString();
-  return `${base}-${suffix}`;
+    .replace(/[^a-z]+/g, "-") // letters only — strip numbers so phone/address don't leak in
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-")
+    .slice(0, maxLen);
+}
+
+export async function generateSlug(businessName: string, city: string): Promise<string> {
+  const namePart = toSlugPart(businessName, 40);
+  const cityPart = toSlugPart(city, 20);
+
+  // Preferred: just the business name — cleanest branding
+  if (namePart && !(await getSite(namePart))) return namePart;
+
+  // Try: name + city
+  if (cityPart) {
+    const withCity = `${namePart}-${cityPart}`.slice(0, 53);
+    if (!(await getSite(withCity))) return withCity;
+  }
+
+  // Try: name + incrementing number (2, 3, …)
+  for (let i = 2; i <= 20; i++) {
+    const candidate = `${namePart}-${i}`;
+    if (!(await getSite(candidate))) return candidate;
+  }
+
+  // Last resort: name + 4-digit random
+  return `${namePart}-${Math.floor(1000 + Math.random() * 9000)}`;
 }

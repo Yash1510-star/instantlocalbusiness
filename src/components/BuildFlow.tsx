@@ -294,6 +294,7 @@ export function BuildFlow() {
 
       const uniqueKey = `${slug}-${Date.now()}`;
       sessionStorage.setItem(`site_${uniqueKey}`, JSON.stringify(data.site));
+      sessionStorage.setItem(`city_${uniqueKey}`, form.city);
       router.push(`/preview/${uniqueKey}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";

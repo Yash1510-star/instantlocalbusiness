@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       businessName: string;
       businessEmail: string;
       city: string;
+      customSlug?: string;
       plan?: "starter" | "pro" | "business";
     };
 
@@ -50,8 +51,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // generateSlug already includes a unique timestamp suffix
-    const slug = generateSlug(body.businessName, body.city ?? "");
+    let slug: string;
+    if (body.customSlug) {
+      const clean = body.customSlug.toLowerCase().trim();
+      if (!/^[a-z0-9][a-z0-9-]{1,50}[a-z0-9]$/.test(clean)) {
+        return NextResponse.json({ error: "Invalid subdomain format" }, { status: 400 });
+      }
+      const existing = await getSite(clean);
+      if (existing) {
+        return NextResponse.json({ error: "That subdomain is already taken. Please choose another." }, { status: 409 });
+      }
+      slug = clean;
+    } else {
+      slug = await generateSlug(body.businessName, body.city ?? "");
+    }
 
     const savedSite: SavedSite = {
       slug,

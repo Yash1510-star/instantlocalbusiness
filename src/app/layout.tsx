@@ -3,8 +3,10 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NavWrapper } from "@/components/NavWrapper";
 import { Footer } from "@/components/Footer";
+import { headers } from "next/headers";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://instantlocalbusiness.com";
+const ROOT_DOMAIN = SITE_URL.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 export const viewport: Viewport = {
   themeColor: "#2563eb",
@@ -72,18 +74,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const host = (headersList.get("host") ?? "").split(":")[0].toLowerCase();
+  // Hide platform nav/footer on customer subdomain sites
+  const isPublishedSite =
+    host !== ROOT_DOMAIN &&
+    host !== `www.${ROOT_DOMAIN}` &&
+    host.endsWith(`.${ROOT_DOMAIN}`);
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased" suppressHydrationWarning>
-          <NavWrapper />
+          {!isPublishedSite && <NavWrapper />}
           <main>{children}</main>
-          <Footer />
+          {!isPublishedSite && <Footer />}
         </body>
       </html>
     </ClerkProvider>

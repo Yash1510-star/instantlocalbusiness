@@ -516,6 +516,9 @@ export function SitePreview({ slug }: { slug: string }) {
   // Start as undefined (not yet checked) so we can distinguish
   // "still loading from sessionStorage" from "confirmed missing"
   const [aiSite, setAiSite] = useState<GeneratedSite | null | undefined>(undefined);
+  const [siteCity, setSiteCity] = useState("");
+  const [customSlug, setCustomSlug] = useState("");
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
 
   // Static template fallback (for examples/demo pages)
   const staticTemplate = TEMPLATES[slug] ?? buildFallbackTemplate(slug);
@@ -525,6 +528,8 @@ export function SitePreview({ slug }: { slug: string }) {
   // doesn't lose the site data.
   useEffect(() => {
     const stored = sessionStorage.getItem(`site_${slug}`);
+    const city = sessionStorage.getItem(`city_${slug}`) ?? "";
+    setSiteCity(city);
     if (stored) {
       try {
         setAiSite(JSON.parse(stored) as GeneratedSite);
@@ -541,6 +546,32 @@ export function SitePreview({ slug }: { slug: string }) {
   const displayName = aiSite
     ? slug.replace(/-\d{4}$/, "").split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
     : staticTemplate.name;
+
+  // Pre-fill subdomain suggestion from business name (letters only)
+  useEffect(() => {
+    if (!aiSite) return;
+    const suggestion = (aiSite.metaTitle ?? displayName)
+      .toLowerCase()
+      .replace(/[^a-z]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+    setCustomSlug(suggestion);
+  }, [aiSite, displayName]);
+
+  // Debounced slug availability check
+  useEffect(() => {
+    if (!customSlug || customSlug.length < 3) { setSlugStatus("idle"); return; }
+    setSlugStatus("checking");
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-slug?slug=${encodeURIComponent(customSlug)}`);
+        const data = await res.json() as { available: boolean; error?: string };
+        if (data.error) setSlugStatus("invalid");
+        else setSlugStatus(data.available ? "available" : "taken");
+      } catch { setSlugStatus("idle"); }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [customSlug]);
 
   const handlePublish = async () => {
     if (publishing) return; // prevent double-clicks
@@ -563,7 +594,8 @@ export function SitePreview({ slug }: { slug: string }) {
           site: aiSite,
           businessName: displayName,
           businessEmail: aiSite.email,
-          city: aiSite.address,
+          city: siteCity || aiSite.address,
+          customSlug: customSlug || undefined,
           plan: "starter",
         }),
       });
@@ -648,17 +680,39 @@ export function SitePreview({ slug }: { slug: string }) {
                 <Globe size={13} /> Loading...
               </button>
             ) : (
-              <button
-                onClick={handlePublish}
-                disabled={publishing}
-                className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
-              >
-                {publishing ? (
-                  <><span className="animate-spin inline-block">⏳</span> Publishing...</>
-                ) : (
-                  <><Globe size={13} /> Publish</>
+              <div className="flex items-center gap-2">
+                {/* Subdomain picker */}
+                {aiSite && (
+                  <div className="flex items-center gap-1 bg-gray-700 border border-gray-600 rounded-lg px-2 py-1">
+                    <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:inline">site:</span>
+                    <input
+                      type="text"
+                      value={customSlug}
+                      onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                      className="bg-transparent text-xs text-white w-32 outline-none placeholder-gray-500"
+                      placeholder="your-business"
+                      maxLength={50}
+                    />
+                    <span className="text-xs text-gray-500 whitespace-nowrap">.instantlocalbusiness.com</span>
+                    <span className="ml-1 text-xs">
+                      {slugStatus === "checking" && <span className="text-gray-400">…</span>}
+                      {slugStatus === "available" && <span className="text-green-400">✓</span>}
+                      {slugStatus === "taken" && <span className="text-red-400">✗</span>}
+                    </span>
+                  </div>
                 )}
-              </button>
+                <button
+                  onClick={handlePublish}
+                  disabled={publishing || slugStatus === "taken" || slugStatus === "checking"}
+                  className="flex items-center gap-1.5 text-xs text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  {publishing ? (
+                    <><span className="animate-spin inline-block">⏳</span> Publishing...</>
+                  ) : (
+                    <><Globe size={13} /> Publish</>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
