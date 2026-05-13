@@ -135,8 +135,8 @@ export default function ContactPage() {
                       type="text"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.name ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"
+                      className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.name ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
                       }`}
                       placeholder="Your name"
                     />
@@ -150,8 +150,8 @@ export default function ContactPage() {
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.email ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"
+                      className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors.email ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
                       }`}
                       placeholder="you@example.com"
                     />
@@ -168,7 +168,7 @@ export default function ContactPage() {
                       type="text"
                       value={form.company}
                       onChange={(e) => setForm({ ...form, company: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Your business name"
                     />
                   </div>
@@ -179,7 +179,7 @@ export default function ContactPage() {
                     <select
                       value={form.subject}
                       onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select a topic</option>
                       <option value="pricing">Pricing question</option>
@@ -201,7 +201,7 @@ export default function ContactPage() {
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     rows={5}
                     className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
-                      errors.message ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"
+                      errors.message ? "border-red-300 bg-red-50" : "border-gray-200 bg-white text-gray-900"
                     }`}
                     placeholder="How can we help?"
                   />
