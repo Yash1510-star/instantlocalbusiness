@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getAllSites, getSite, updateSite, deleteSite } from "@/lib/site-store";
+import { getAllSites, getSite, saveSite, updateSite, deleteSite } from "@/lib/site-store";
+import type { GeneratedSite } from "@/lib/generate-site";
 
 function isAdmin(userId: string | null | undefined): boolean {
   const adminId = process.env.ADMIN_USER_ID;
@@ -41,6 +42,19 @@ export async function PATCH(req: NextRequest) {
     ...(status ? { status: status as "live" | "draft" | "suspended" } : {}),
     ...(plan   ? { plan:   plan   as "starter" | "pro" | "business" } : {}),
   });
+  return NextResponse.json({ success: true });
+}
+
+// PUT /api/admin/sites — replace full site content and republish
+export async function PUT(req: NextRequest) {
+  if (!await checkAdmin()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { slug, site } = await req.json() as { slug: string; site: unknown };
+  if (!slug || !site) return NextResponse.json({ error: "slug and site required" }, { status: 400 });
+  const existing = await getSite(slug);
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await saveSite({ ...existing, site: site as GeneratedSite });
   return NextResponse.json({ success: true });
 }
 

@@ -446,7 +446,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 // HOSPITALITY LAYOUT — Restaurants, Cafes, Bakeries
 // Lifestyle-brand vibes: full-bleed imagery, editorial typography, warm atmosphere
 // ═══════════════════════════════════════════════════════════════════════════════
-function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function HospitalityLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -454,6 +454,9 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
   const light = isLightPalette(p);
@@ -591,7 +594,7 @@ function HospitalityLayout({ site, p, compact, customHero, setCustomHero }: Layo
 // SERVICE LAYOUT — Plumbers, Electricians, Auto, Cleaning, Landscaping
 // Bold, trust-first, huge CTA, emergency-ready
 // ═══════════════════════════════════════════════════════════════════════════════
-function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function ServiceLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -599,6 +602,9 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -737,7 +743,7 @@ function ServiceLayout({ site, p, compact, customHero, setCustomHero }: LayoutPr
 // WELLNESS LAYOUT — Salons, Dental, Gym, Spa, Pet Grooming
 // Editorial, clean white, booking-first, lifestyle photography
 // ═══════════════════════════════════════════════════════════════════════════════
-function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function WellnessLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -745,6 +751,9 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -885,7 +894,7 @@ function WellnessLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
 // PROFESSIONAL LAYOUT — Law, Accounting, Real Estate, Photography
 // Premium, minimal, authority, dark navy + clean white
 // ═══════════════════════════════════════════════════════════════════════════════
-function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function ProfessionalLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -893,6 +902,9 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Business";
 
@@ -1033,7 +1045,7 @@ function ProfessionalLayout({ site, p, compact, customHero, setCustomHero }: Lay
 // CREATIVE LAYOUT — Dance Studios, Photography, Florists
 // Full-bleed dark hero, bold centered typography, image mosaic gallery
 // ═══════════════════════════════════════════════════════════════════════════════
-function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function CreativeLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -1041,6 +1053,9 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Studio";
 
@@ -1169,7 +1184,7 @@ function CreativeLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
 // BOUTIQUE LAYOUT — Nail Salon, Massage Therapy, Pet Grooming
 // Light, elegant, luxury personal-care feel with soft floating cards
 // ═══════════════════════════════════════════════════════════════════════════════
-function BoutiqueLayout({ site, p, compact, customHero, setCustomHero }: LayoutProps) {
+function BoutiqueLayout({ site, p, compact, customHero, setCustomHero, onSiteChange }: LayoutProps) {
   const [s, setS] = useState(site);
   const [svcs, setSvcs] = useState<ServiceItem[]>(site.services);
   const [svcPhotos, setSvcPhotos] = useState<string[]>(site.servicePhotos);
@@ -1177,6 +1192,9 @@ function BoutiqueLayout({ site, p, compact, customHero, setCustomHero }: LayoutP
   const deleteSvc = (i: number) => { setSvcs(prev => prev.filter((_, idx) => idx !== i)); setSvcPhotos(prev => prev.filter((_, idx) => idx !== i)); };
   const addSvc = () => { setSvcs(prev => [...prev, { title: "New Service", description: "Describe this service", icon: "" }]); setSvcPhotos(prev => [...prev, svcPhotos[0] ?? ""]); };
   const updateSvcPhoto = (i: number, url: string) => setSvcPhotos(prev => prev.map((v, idx) => idx === i ? url : v));
+  const onSiteChangeRef = useRef(onSiteChange);
+  useEffect(() => { onSiteChangeRef.current = onSiteChange; });
+  useEffect(() => { onSiteChangeRef.current?.({ ...s, services: svcs, servicePhotos: svcPhotos, heroPhoto: customHero ?? s.heroPhoto }); }, [s, svcs, svcPhotos, customHero]);
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const businessName = s.heroHeadline.split(":")[0] || "Boutique";
 
@@ -1306,14 +1324,19 @@ type LayoutProps = {
   compact: boolean;
   customHero: string | null;
   setCustomHero: (url: string) => void;
+  onSiteChange?: (updated: GeneratedSite) => void;
 };
 
 // ─── Main export — with palette picker + layout dispatcher ────────────────────
-export function AISiteRenderer({ site, compact }: { site: GeneratedSite; compact: boolean }) {
+export function AISiteRenderer({ site, compact, onSiteChange }: {
+  site: GeneratedSite;
+  compact: boolean;
+  onSiteChange?: (updated: GeneratedSite) => void;
+}) {
   const [palette, setPalette] = useState<Palette>(() => getPaletteFromScheme(site.colorScheme));
   const [customHero, setCustomHero] = useState<string | null>(null);
 
-  const sharedProps: LayoutProps = { site, p: palette, compact, customHero, setCustomHero };
+  const sharedProps: LayoutProps = { site, p: palette, compact, customHero, setCustomHero, onSiteChange };
 
   return (
     <div className="relative">

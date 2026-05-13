@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SavedSite } from "@/lib/site-store";
-import { Trash2, Globe, Ban, CheckCircle, RefreshCw, Search, BarChart2 } from "lucide-react";
+import { Trash2, Globe, Ban, CheckCircle, RefreshCw, Search, BarChart2, Pencil } from "lucide-react";
 
 type SiteRow = Omit<SavedSite, "site"> & { siteSize?: number };
 
@@ -195,6 +195,15 @@ export default function AdminDashboard() {
                         >
                           <Globe size={14} />
                         </a>
+
+                        {/* Edit & republish */}
+                        <button
+                          onClick={() => router.push(`/admin/edit/${site.slug}`)}
+                          title="Edit & republish"
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                        >
+                          <Pencil size={14} />
+                        </button>
 
                         {/* Suspend / Unsuspend */}
                         <button
