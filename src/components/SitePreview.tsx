@@ -504,6 +504,7 @@ function buildFallbackTemplate(slug: string): BusinessTemplate {
 
 // ─── Preview shell ────────────────────────────────────────────────────────────
 
+import { useRef } from "react";
 import type { GeneratedSite } from "@/lib/generate-site";
 import { AISiteRenderer } from "./AISiteRenderer";
 
@@ -516,6 +517,8 @@ export function SitePreview({ slug }: { slug: string }) {
   // Start as undefined (not yet checked) so we can distinguish
   // "still loading from sessionStorage" from "confirmed missing"
   const [aiSite, setAiSite] = useState<GeneratedSite | null | undefined>(undefined);
+  // Captures live inline edits without triggering a re-render on every keystroke
+  const pendingRef = useRef<GeneratedSite | null>(null);
   const [siteCity, setSiteCity] = useState("");
   const [customSlug, setCustomSlug] = useState("");
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
@@ -587,11 +590,14 @@ export function SitePreview({ slug }: { slug: string }) {
 
     let redirecting = false;
     try {
+      // Use the latest edited version if any changes were made
+      const siteToPublish = pendingRef.current ?? aiSite;
+
       const res = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          site: aiSite,
+          site: siteToPublish,
           businessName: displayName,
           businessEmail: aiSite.email,
           city: siteCity || aiSite.address,
@@ -660,8 +666,12 @@ export function SitePreview({ slug }: { slug: string }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 px-3 py-1.5 rounded-lg transition-colors">
-              <Edit3 size={13} /> Edit
+            <button
+              onClick={() => document.querySelector(".bg-white.rounded-xl")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-blue-200 border border-blue-500/40 hover:border-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors"
+              title="Click any text, service, or menu item to edit it"
+            >
+              <Edit3 size={13} /> Edit inline
             </button>
             <button className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 px-3 py-1.5 rounded-lg transition-colors">
               <Share2 size={13} /> Share
@@ -765,6 +775,16 @@ export function SitePreview({ slug }: { slug: string }) {
         </div>
       )}
 
+      {/* Edit hint banner */}
+      {aiSite && !published && (
+        <div className="bg-blue-600/10 border-b border-blue-500/20 px-4 py-2 text-center">
+          <p className="text-xs text-blue-300">
+            <Edit3 size={11} className="inline mr-1 mb-0.5" />
+            Everything is editable — click any text, service card, menu item, or hero image to customize before publishing.
+          </p>
+        </div>
+      )}
+
       {/* Preview frame */}
       <div className="flex items-start justify-center p-6 pb-24">
         <div
@@ -772,7 +792,15 @@ export function SitePreview({ slug }: { slug: string }) {
           style={{ width: deviceWidths[device], maxWidth: "100%", minHeight: 600 }}
         >
           {aiSite ? (
-            <AISiteRenderer site={aiSite} compact={device === "mobile"} />
+            <AISiteRenderer
+              site={aiSite}
+              compact={device === "mobile"}
+              onSiteChange={(updated) => {
+                pendingRef.current = updated;
+                // Persist edits to sessionStorage so a refresh doesn't lose them
+                sessionStorage.setItem(`site_${slug}`, JSON.stringify(updated));
+              }}
+            />
           ) : (
             <MockWebsite template={staticTemplate} compact={device === "mobile"} />
           )}
