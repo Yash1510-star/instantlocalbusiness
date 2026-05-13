@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 import { getSite } from "@/lib/site-store";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { guardInputs } from "@/lib/input-guard";
-
-const FROM_EMAIL = "noreply@instantlocalbusiness.com";
+import { sendEmail } from "@/lib/mailer";
 
 function esc(s: string) {
   return String(s)
@@ -47,23 +45,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
 
-    const toEmail = saved.businessEmail;
-    const businessName = saved.businessName;
     const siteUrl = `https://${esc(slug)}.instantlocalbusiness.com`;
 
-    if (!process.env.RESEND_API_KEY) {
-      console.warn("[site-contact] RESEND_API_KEY not set — lead NOT sent:", {
-        businessName, toEmail, slug, name, contact, message,
-      });
-      // Still return success so the visitor isn't confused, but log clearly
-      return NextResponse.json({ success: true });
-    }
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: toEmail,
+    const { ok, error } = await sendEmail({
+      to: saved.businessEmail,
       replyTo: contact.includes("@") ? contact : undefined,
       subject: `New lead from your website — ${esc(name)}`,
       html: `
@@ -73,7 +58,7 @@ export async function POST(req: NextRequest) {
               🎉 New lead from your website!
             </p>
           </div>
-          <h2 style="margin:0 0 16px;font-size:20px;color:#111">New Enquiry — ${esc(businessName)}</h2>
+          <h2 style="margin:0 0 16px;font-size:20px;color:#111">New Enquiry — ${esc(saved.businessName)}</h2>
           <table style="width:100%;border-collapse:collapse;font-size:14px">
             <tr>
               <td style="padding:8px 0;color:#6b7280;width:120px;vertical-align:top">Name</td>
@@ -87,13 +72,11 @@ export async function POST(req: NextRequest) {
             <tr>
               <td style="padding:8px 0;color:#6b7280;vertical-align:top">Message</td>
               <td style="padding:8px 0;color:#111">${esc(message)}</td>
-            </tr>
-            ` : ""}
+            </tr>` : ""}
           </table>
           <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e5e7eb">
             <p style="margin:0 0 12px;font-size:13px;color:#6b7280">
-              Submitted via
-              <a href="${siteUrl}" style="color:#2563eb;text-decoration:none">${siteUrl}</a>
+              Submitted via <a href="${siteUrl}" style="color:#2563eb;text-decoration:none">${siteUrl}</a>
             </p>
             <a href="${siteUrl}" style="display:inline-block;background:#2563eb;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;text-decoration:none">
               View Your Website →
@@ -106,8 +89,8 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    if (error) {
-      console.error("[site-contact] Resend error:", error);
+    if (!ok) {
+      console.error("[site-contact] Email failed:", error);
       return NextResponse.json({ error: "Failed to send. Please try again." }, { status: 500 });
     }
 

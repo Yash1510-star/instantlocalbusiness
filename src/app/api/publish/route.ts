@@ -94,63 +94,52 @@ export async function POST(req: NextRequest) {
       .replace(/\/$/, "");
     const siteSubdomain = `https://${slug}.${rootDomain}`;
 
-    // Send confirmation email if Resend is configured
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { Resend: ResendClient } = await import("resend");
-        const resend = new ResendClient(process.env.RESEND_API_KEY);
-        const siteUrl = siteSubdomain;
+    // Send confirmation emails via Zoho SMTP (non-fatal if email fails)
+    try {
+      const { sendEmail } = await import("@/lib/mailer");
+      const siteUrl = siteSubdomain;
 
-        await resend.emails.send({
-          from: "noreply@instantlocalbusiness.com",
-          to: body.businessEmail,
-          subject: `Your website is live — ${body.businessName}`,
-          html: `
-            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-              <h1 style="font-size:24px;font-weight:800;color:#111;margin:0 0 8px">
-                Your site is live!
-              </h1>
-              <p style="color:#6b7280;font-size:15px;margin:0 0 24px">
-                ${esc(body.businessName)} is now published and accessible to anyone on the internet.
-              </p>
-              <a href="${esc(siteUrl)}"
-                style="display:inline-block;background:#2563eb;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px">
-                View your site →
-              </a>
-              <p style="margin-top:24px;color:#9ca3af;font-size:13px">
-                Your site URL: <a href="${esc(siteUrl)}" style="color:#2563eb">${esc(siteUrl)}</a>
-              </p>
-              <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
-              <p style="color:#6b7280;font-size:13px">
-                Want a custom domain? <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/pricing" style="color:#2563eb">Upgrade to Pro →</a>
-              </p>
-              <p style="color:#9ca3af;font-size:12px;margin-top:16px">
-                — The Instant Local Business team
-              </p>
-            </div>
-          `,
-        });
+      await sendEmail({
+        to: body.businessEmail,
+        subject: `Your website is live — ${body.businessName}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+            <h1 style="font-size:24px;font-weight:800;color:#111;margin:0 0 8px">Your site is live!</h1>
+            <p style="color:#6b7280;font-size:15px;margin:0 0 24px">
+              ${esc(body.businessName)} is now published and accessible to anyone on the internet.
+            </p>
+            <a href="${esc(siteUrl)}"
+              style="display:inline-block;background:#2563eb;color:#fff;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;font-size:15px">
+              View your site →
+            </a>
+            <p style="margin-top:24px;color:#9ca3af;font-size:13px">
+              Your site URL: <a href="${esc(siteUrl)}" style="color:#2563eb">${esc(siteUrl)}</a>
+            </p>
+            <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
+            <p style="color:#6b7280;font-size:13px">
+              Want a custom domain? <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantlocalbusiness.com"}/pricing" style="color:#2563eb">Upgrade to Pro →</a>
+            </p>
+            <p style="color:#9ca3af;font-size:12px;margin-top:16px">— The Instant Local Business team</p>
+          </div>
+        `,
+      });
 
-        // Notify admin
-        await resend.emails.send({
-          from: "noreply@instantlocalbusiness.com",
-          to: "hello@instantlocalbusiness.com",
-          subject: `New site published: ${body.businessName}`,
-          html: `
-            <div style="font-family:sans-serif;padding:16px">
-              <h2>${esc(body.businessName)}</h2>
-              <p>Email: ${esc(body.businessEmail)}</p>
-              <p>Plan: ${esc(savedSite.plan)}</p>
-              <p>Slug: ${esc(slug)}</p>
-              <p>URL: <a href="${esc(siteSubdomain)}">${esc(siteSubdomain)}</a></p>
-              <p>Published: ${esc(savedSite.publishedAt)}</p>
-            </div>
-          `,
-        });
-      } catch (emailErr) {
-        // Don't fail the publish if email fails
-        console.error("[publish] Email error:", emailErr);
-      }
+      await sendEmail({
+        to: "hello@instantlocalbusiness.com",
+        subject: `New site published: ${body.businessName}`,
+        html: `
+          <div style="font-family:sans-serif;padding:16px">
+            <h2>${esc(body.businessName)}</h2>
+            <p>Email: ${esc(body.businessEmail)}</p>
+            <p>Plan: ${esc(savedSite.plan)}</p>
+            <p>Slug: ${esc(slug)}</p>
+            <p>URL: <a href="${esc(siteSubdomain)}">${esc(siteSubdomain)}</a></p>
+            <p>Published: ${esc(savedSite.publishedAt)}</p>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("[publish] Email error:", emailErr);
     }
 
     return NextResponse.json({

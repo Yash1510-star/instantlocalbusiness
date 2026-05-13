@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { guardInputs } from "@/lib/input-guard";
+import { sendEmail } from "@/lib/mailer";
 
 const TO_EMAIL = "hello@instantlocalbusiness.com";
-const FROM_EMAIL = "noreply@instantlocalbusiness.com";
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Rate limit: 5 submissions per IP per hour ──────────────────────────
     const ip = getClientIP(req);
     const rl = await checkRateLimit(ip, "contact");
     if (!rl.success) {
@@ -18,9 +16,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, company, subject, message } = await req.json();
+    const { name, email, company, subject, message } = await req.json() as {
+      name: string; email: string; company?: string; subject?: string; message: string;
+    };
 
-    // ── Input guard ────────────────────────────────────────────────────────
     const guard = guardInputs({ message });
     if (!guard.ok) {
       return NextResponse.json({ error: guard.error }, { status: 400 });
@@ -30,21 +29,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    if (!process.env.RESEND_API_KEY) {
-      console.log("[/api/contact] No RESEND_API_KEY — logging form submission:");
-      console.log({ name, email, company, subject, message });
-      return NextResponse.json({ success: true });
-    }
+    const subjectLabel = subject ? `[${subject.charAt(0).toUpperCase() + subject.slice(1)}] ` : "";
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
-    const subjectLabel = subject
-      ? `[${subject.charAt(0).toUpperCase() + subject.slice(1)}] `
-      : "";
-
-    // Notify you at hello@
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    // Notify you
+    await sendEmail({
       to: TO_EMAIL,
       replyTo: email,
       subject: `${subjectLabel}New contact from ${name}`,
@@ -63,9 +51,8 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    // Auto-reply to the person who submitted
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    // Auto-reply to sender
+    await sendEmail({
       to: email,
       subject: "We got your message — Instant Local Business",
       html: `
