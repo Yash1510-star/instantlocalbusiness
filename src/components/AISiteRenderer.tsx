@@ -18,13 +18,16 @@
  *  • Per-service photo upload, add new service, delete service
  */
 
-import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, createContext, useContext, type ChangeEvent } from "react";
 import {
   Phone, MapPin, Clock, CheckCircle2, Upload, Palette,
   ChevronDown, Star, ArrowRight, Zap, Shield, Award,
   Pencil, Trash2, Plus, X, Check,
 } from "lucide-react";
 import type { GeneratedSite } from "@/lib/generate-site";
+
+// ─── Readonly context — when true, all editing UI is hidden ──────────────────
+const ReadonlyCtx = createContext(false);
 
 type ServiceItem = GeneratedSite["services"][number] & { _photo?: string };
 
@@ -157,7 +160,10 @@ const isLightPalette = (p: Palette) => p.id === "mint";
 function EditableText({
   value, onChange, className, multiline = false,
 }: { value: string; onChange: (v: string) => void; className?: string; multiline?: boolean }) {
+  const readonly = useContext(ReadonlyCtx);
   const [editing, setEditing] = useState(false);
+  // In readonly (public site) mode — plain text, no editing chrome
+  if (readonly) return <span className={className}>{value}</span>;
   if (editing) {
     const sharedClass = `${className} bg-white/10 border border-white/40 rounded px-1 outline-none min-w-[60px]`;
     return multiline
@@ -216,7 +222,9 @@ function PalettePicker({ current, onSelect }: { current: Palette; onSelect: (p: 
 
 // ─── Image upload helper ──────────────────────────────────────────────────────
 function ImageUploadOverlay({ onUpload }: { onUpload: (dataUrl: string) => void }) {
+  const readonly = useContext(ReadonlyCtx);
   const ref = useRef<HTMLInputElement>(null);
+  if (readonly) return null;
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -260,6 +268,7 @@ function EditableServiceCard({
   onDelete: (i: number) => void;
   onPhotoChange: (i: number, url: string) => void;
 }) {
+  const readonly = useContext(ReadonlyCtx);
   const [hovering, setHovering] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDesc, setEditingDesc] = useState(false);
@@ -274,7 +283,7 @@ function EditableServiceCard({
   };
 
   // Edit bar — inline (not absolutely positioned) so overflow-hidden never blocks clicks
-  const editBar = (
+  const editBar = readonly ? null : (
     <div className={`flex items-center gap-1 transition-opacity duration-150 ${hovering ? "opacity-100" : "opacity-50"}`}>
       {/* Fixed position keeps input outside overflow-hidden ancestors */}
       <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto}
@@ -412,6 +421,8 @@ function EditableServiceCard({
 }
 
 function AddServiceButton({ onAdd, dark }: { onAdd: () => void; dark?: boolean }) {
+  const readonly = useContext(ReadonlyCtx);
+  if (readonly) return null;
   return (
     <button
       onClick={onAdd}
@@ -427,6 +438,8 @@ function AddServiceButton({ onAdd, dark }: { onAdd: () => void; dark?: boolean }
 }
 
 function ServiceEditHint({ dark }: { dark?: boolean }) {
+  const readonly = useContext(ReadonlyCtx);
+  if (readonly) return null;
   return (
     <p className={`text-xs text-center mb-3 ${dark ? "text-white/30" : "text-gray-400"}`}>
       <Pencil size={10} className="inline mr-1 mb-0.5" />
@@ -1328,10 +1341,11 @@ type LayoutProps = {
 };
 
 // ─── Main export — with palette picker + layout dispatcher ────────────────────
-export function AISiteRenderer({ site, compact, onSiteChange }: {
+export function AISiteRenderer({ site, compact, onSiteChange, readonly = false }: {
   site: GeneratedSite;
   compact: boolean;
   onSiteChange?: (updated: GeneratedSite) => void;
+  readonly?: boolean;
 }) {
   const [palette, setPalette] = useState<Palette>(() => getPaletteFromScheme(site.colorScheme));
   const [customHero, setCustomHero] = useState<string | null>(null);
@@ -1339,25 +1353,27 @@ export function AISiteRenderer({ site, compact, onSiteChange }: {
   const sharedProps: LayoutProps = { site, p: palette, compact, customHero, setCustomHero, onSiteChange };
 
   return (
-    <div className="relative">
-      {/* Floating palette picker */}
-      {!compact && (
-        <div className="absolute top-16 right-3 z-30">
-          <PalettePicker current={palette} onSelect={setPalette} />
-        </div>
-      )}
+    <ReadonlyCtx.Provider value={readonly}>
+      <div className="relative">
+        {/* Floating palette picker — only in edit mode */}
+        {!compact && !readonly && (
+          <div className="absolute top-16 right-3 z-30">
+            <PalettePicker current={palette} onSelect={setPalette} />
+          </div>
+        )}
 
-      {(() => {
-        switch (site.layout) {
-          case "hospitality":  return <HospitalityLayout {...sharedProps} />;
-          case "service":      return <ServiceLayout {...sharedProps} />;
-          case "wellness":     return <WellnessLayout {...sharedProps} />;
-          case "professional": return <ProfessionalLayout {...sharedProps} />;
-          case "creative":     return <CreativeLayout {...sharedProps} />;
-          case "boutique":     return <BoutiqueLayout {...sharedProps} />;
-          default:             return <WellnessLayout {...sharedProps} />;
-        }
-      })()}
-    </div>
+        {(() => {
+          switch (site.layout) {
+            case "hospitality":  return <HospitalityLayout {...sharedProps} />;
+            case "service":      return <ServiceLayout {...sharedProps} />;
+            case "wellness":     return <WellnessLayout {...sharedProps} />;
+            case "professional": return <ProfessionalLayout {...sharedProps} />;
+            case "creative":     return <CreativeLayout {...sharedProps} />;
+            case "boutique":     return <BoutiqueLayout {...sharedProps} />;
+            default:             return <WellnessLayout {...sharedProps} />;
+          }
+        })()}
+      </div>
+    </ReadonlyCtx.Provider>
   );
 }
