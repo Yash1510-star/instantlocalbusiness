@@ -129,7 +129,7 @@ export default function DemoPage() {
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="Jane Smith"
-                  className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                  className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"}`}
                 />
                 {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
               </div>
@@ -140,7 +140,7 @@ export default function DemoPage() {
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="jane@yourbusiness.com"
-                  className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                  className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"}`}
                 />
                 {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
               </div>
@@ -155,7 +155,7 @@ export default function DemoPage() {
                   value={form.phone}
                   onChange={e => setForm({ ...form, phone: e.target.value })}
                   placeholder="(555) 555-5555"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -165,7 +165,7 @@ export default function DemoPage() {
                   value={form.businessName}
                   onChange={e => setForm({ ...form, businessName: e.target.value })}
                   placeholder="e.g. Maria's Tacos"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function DemoPage() {
                 min={minDate()}
                 max={maxDate()}
                 onChange={e => setSelectedDate(e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.date ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.date ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"}`}
               />
               {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
             </div>
