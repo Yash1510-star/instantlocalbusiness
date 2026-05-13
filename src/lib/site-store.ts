@@ -159,6 +159,23 @@ async function fileSet(slug: string, data: SavedSite): Promise<void> {
   await writeFile(filePath, JSON.stringify(all, null, 2));
 }
 
+async function kvDelete(key: string): Promise<void> {
+  await fetch(`${kvBase()}/del/${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${kvToken()}` },
+  });
+}
+
+async function kvRemoveUserSlug(userId: string, slug: string): Promise<void> {
+  const existing = await kvGetUserSlugs(userId);
+  const updated = existing.filter(s => s !== slug);
+  await fetch(`${kvBase()}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${kvToken()}`, "Content-Type": "application/json" },
+    body: JSON.stringify([["SET", `user:${userId}`, JSON.stringify(updated)]]),
+  });
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function getSite(slug: string): Promise<SavedSite | null> {
@@ -179,6 +196,25 @@ export async function saveSite(data: SavedSite): Promise<void> {
     return;
   }
   return fileSet(data.slug, data);
+}
+
+export async function deleteSite(slug: string): Promise<void> {
+  if (kvReady()) {
+    const site = await kvGet(`site:${slug}`);
+    await kvDelete(`site:${slug}`);
+    if (site?.userId) await kvRemoveUserSlug(site.userId, slug);
+    return;
+  }
+  // Dev: remove from file store
+  const { readFile, writeFile } = await import("fs/promises");
+  const path = await import("path");
+  const filePath = path.join(process.cwd(), "data", "sites.json");
+  try {
+    const raw = await readFile(filePath, "utf-8");
+    const all = JSON.parse(raw) as Record<string, SavedSite>;
+    delete all[slug];
+    await writeFile(filePath, JSON.stringify(all, null, 2));
+  } catch { /* file doesn't exist */ }
 }
 
 export async function getSitesByUser(userId: string): Promise<SavedSite[]> {
