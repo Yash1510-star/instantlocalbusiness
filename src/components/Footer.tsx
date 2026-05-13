@@ -9,21 +9,15 @@ const footerLinks = {
   ],
   Company: [
     { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
     { label: "Contact", href: "/contact" },
-    { label: "Press", href: "/press" },
   ],
   Support: [
     { label: "Help Center", href: "/help" },
     { label: "Book a Demo", href: "/demo" },
-    { label: "Status", href: "/status" },
-    { label: "API Docs", href: "/docs" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
-    { label: "GDPR", href: "/gdpr" },
   ],
 };
 
