@@ -4,8 +4,13 @@ import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { guardInputs } from "@/lib/input-guard";
 import { auth } from "@clerk/nextjs/server";
 import { getSitesByUser } from "@/lib/site-store";
+import { getEffectivePlan, type Plan } from "@/lib/subscription-store";
 
-const FREE_SITE_LIMIT = 1;
+const PLAN_SITE_LIMITS: Record<Plan, number> = {
+  starter: 1,
+  pro: 10,
+  business: Infinity,
+};
 
 export const maxDuration = 30;
 
@@ -56,9 +61,11 @@ export async function POST(req: NextRequest) {
       const capDisabled = process.env.DISABLE_SITE_CAP === "true" && process.env.NODE_ENV !== "production";
       if (userId && !capDisabled) {
         const existing = await getSitesByUser(userId);
-        if (existing.length >= FREE_SITE_LIMIT) {
+        const plan = await getEffectivePlan(userId);
+        const limit = PLAN_SITE_LIMITS[plan];
+        if (existing.length >= limit) {
           return NextResponse.json(
-            { error: `Free accounts are limited to ${FREE_SITE_LIMIT} websites. Upgrade to Pro for unlimited sites.` },
+            { error: `Your ${plan} plan is limited to ${limit} websites. Upgrade for more.` },
             { status: 403 }
           );
         }

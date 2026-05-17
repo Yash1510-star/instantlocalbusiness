@@ -1,87 +1,13 @@
 import Link from "next/link";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
+import { CheckoutButton } from "@/components/CheckoutButton";
 
 export const metadata: Metadata = {
   title: "Pricing — InstantLocalBusiness.com",
   description: "Simple, transparent pricing. Start free. Upgrade when you're ready.",
   alternates: { canonical: "/pricing" },
 };
-
-const plans = [
-  {
-    name: "Starter",
-    price: "Free",
-    period: "",
-    description: "Get online with no cost, ever",
-    features: [
-      "1-page AI-built website",
-      "AI copywriting",
-      "Mobile responsive",
-      "InstantLocalBusiness subdomain",
-      "Contact form",
-      "Live for 15 days — upgrade anytime to keep it",
-    ],
-    notIncluded: [
-      "Custom domain",
-      "SEO analytics",
-      "Booking forms",
-      "Google Maps integration",
-    ],
-    cta: "Start Free",
-    href: "/build",
-    highlighted: false,
-    badge: "",
-  },
-  {
-    name: "Pro",
-    price: "$19",
-    period: "/month",
-    annual: "$15",
-    description: "Everything a growing local business needs",
-    features: [
-      "Up to 10 pages",
-      "Custom domain connection (bring your own)",
-      "Local SEO tools & analytics",
-      "Contact & appointment booking forms",
-      "Google Maps & business hours",
-      "Review collection tool",
-      "Priority email support",
-      "SSL certificate",
-      "99.9% uptime SLA",
-      "Early adopter price — locked for life",
-    ],
-    notIncluded: [],
-    cta: "Start 14-Day Free Trial",
-    href: "/build?plan=pro",
-    highlighted: true,
-    badge: "Most Popular",
-  },
-  {
-    name: "Business",
-    price: "$49",
-    period: "/month",
-    annual: "$39",
-    description: "For established businesses ready to scale",
-    features: [
-      "Unlimited pages",
-      "Everything in Pro",
-      "Multiple business locations",
-      "Online ordering / e-commerce",
-      "Team member accounts",
-      "Advanced analytics",
-      "White-glove onboarding call",
-      "Dedicated account manager",
-      "Custom integrations (Zapier, etc.)",
-      "Phone & chat support",
-    ],
-    notIncluded: [],
-    cta: "Contact Sales",
-    href: "/contact",
-    highlighted: false,
-    badge: "",
-  },
-];
 
 const faqs = [
   {
@@ -111,6 +37,86 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const proPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || "";
+  const businessPriceId = process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PRICE_ID || "";
+
+  const plans = [
+    {
+      name: "Starter",
+      price: "Free",
+      period: "",
+      description: "Get online with no cost, ever",
+      features: [
+        "1-page AI-built website",
+        "AI copywriting",
+        "Mobile responsive",
+        "InstantLocalBusiness subdomain",
+        "Contact form",
+        "Live for 15 days — upgrade anytime to keep it",
+      ],
+      notIncluded: [
+        "Custom domain",
+        "SEO analytics",
+        "Booking forms",
+        "Google Maps integration",
+      ],
+      cta: "Start Free",
+      href: "/build",
+      highlighted: false,
+      badge: "",
+    },
+    {
+      name: "Pro",
+      price: "$19",
+      period: "/month",
+      annual: "$15",
+      description: "Everything a growing local business needs",
+      features: [
+        "Up to 10 pages",
+        "Custom domain connection (bring your own)",
+        "Local SEO tools & analytics",
+        "Contact & appointment booking forms",
+        "Google Maps & business hours",
+        "Review collection tool",
+        "Priority email support",
+        "SSL certificate",
+        "99.9% uptime SLA",
+        "Early adopter price — locked for life",
+      ],
+      notIncluded: [],
+      cta: "Start 14-Day Free Trial",
+      href: "/build?plan=pro",
+      highlighted: true,
+      badge: "Most Popular",
+      priceId: proPriceId,
+    },
+    {
+      name: "Business",
+      price: "$49",
+      period: "/month",
+      annual: "$39",
+      description: "For established businesses ready to scale",
+      features: [
+        "Unlimited pages",
+        "Everything in Pro",
+        "Multiple business locations",
+        "Online ordering / e-commerce",
+        "Team member accounts",
+        "Advanced analytics",
+        "White-glove onboarding call",
+        "Dedicated account manager",
+        "Custom integrations (Zapier, etc.)",
+        "Phone & chat support",
+      ],
+      notIncluded: [],
+      cta: "Contact Sales",
+      href: "/contact",
+      highlighted: false,
+      badge: "",
+      priceId: businessPriceId,
+    },
+  ];
+
   return (
     <>
       <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 text-center">
@@ -184,17 +190,32 @@ export default function PricingPage() {
                 </p>
               )}
 
-              <Link
-                href={plan.href}
-                className={`mt-6 flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-xl transition-colors ${
-                  plan.highlighted
-                    ? "bg-white text-blue-600 hover:bg-blue-50"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
-              >
-                {plan.cta}
-                <ArrowRight size={16} />
-              </Link>
+              {plan.name === "Starter" ? (
+                <Link
+                  href={plan.href}
+                  className={`mt-6 flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-xl transition-colors ${
+                    plan.highlighted
+                      ? "bg-white text-blue-600 hover:bg-blue-50"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {plan.cta}
+                  <ArrowRight size={16} />
+                </Link>
+              ) : (
+                <CheckoutButton
+                  priceId={plan.priceId!}
+                  plan={plan.name.toLowerCase() as "pro" | "business"}
+                  className={`mt-6 flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-xl transition-colors w-full ${
+                    plan.highlighted
+                      ? "bg-white text-blue-600 hover:bg-blue-50"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {plan.cta}
+                  <ArrowRight size={16} />
+                </CheckoutButton>
+              )}
 
               <div className="mt-8">
                 <p

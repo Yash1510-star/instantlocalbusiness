@@ -1,40 +1,37 @@
-"use client";
-
-import { useUser, useClerk } from "@clerk/nextjs";
+import { Suspense } from "react";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Globe, Plus, LogOut, ExternalLink, Clock, Sparkles, Rocket, CalendarDays } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { SavedSite } from "@/lib/site-store";
+import { Globe, Plus, ExternalLink, Clock, Sparkles, Rocket, CalendarDays } from "lucide-react";
+import { getSitesByUser } from "@/lib/site-store";
+import { getSubscription } from "@/lib/subscription-store";
+import { SignOutButton } from "@/components/SignOutButton";
+import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
+import { DashboardBanner } from "@/components/DashboardBanner";
 
-export default function DashboardPage() {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
-  const [sites, setSites] = useState<SavedSite[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    fetch("/api/my-sites")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.sites) setSites(data.sites);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [isLoaded]);
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading…</div>
-      </div>
-    );
+export default async function DashboardPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/signin");
   }
 
+  const user = await currentUser();
+  const sites = await getSitesByUser(userId);
+  const subscription = await getSubscription(userId);
+  
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://instantlocalbusiness.com";
+  
+  // Determine plan display
+  const planName = subscription?.status === "active" || subscription?.status === "trialing" 
+    ? subscription.plan 
+    : "starter";
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <Suspense fallback={null}>
+        <DashboardBanner />
+      </Suspense>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
         <div>
@@ -43,17 +40,26 @@ export default function DashboardPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">{user?.primaryEmailAddress?.emailAddress}</p>
         </div>
-        <button
-          onClick={() => signOut({ redirectUrl: "/" })}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-        >
-          <LogOut size={15} />
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Plan:</span>
+            <span className="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">
+              {planName}
+            </span>
+          </div>
+          <SignOutButton />
+        </div>
       </div>
 
+      {/* Subscription Management */}
+      {subscription && (subscription.status === "active" || subscription.status === "trialing") && (
+        <div className="mb-8 flex justify-end">
+          <ManageSubscriptionButton />
+        </div>
+      )}
+
       {/* Quick action — gated at 2 sites */}
-      {!loading && sites.length >= 1 ? (
+      {sites.length >= 1 && planName === "starter" ? (
         <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-indigo-600 rounded-lg text-white shrink-0">
@@ -66,11 +72,11 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Link
-              href="/signup"
+              href="/pricing"
               className="flex-1 flex items-center justify-center gap-1.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 py-2.5 rounded-xl transition-colors"
             >
               <Rocket size={14} />
-              Sign up for Pro
+              Upgrade to Pro
             </Link>
             <Link
               href="/demo"
@@ -99,13 +105,7 @@ export default function DashboardPage() {
       {/* Sites section */}
       <h2 className="text-lg font-bold text-gray-900 mb-4">Your websites</h2>
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="border border-gray-100 rounded-2xl p-5 animate-pulse bg-gray-50 h-32" />
-          ))}
-        </div>
-      ) : sites.length === 0 ? (
+      {sites.length === 0 ? (
         <div className="border border-dashed border-gray-200 rounded-2xl p-10 text-center">
           <Globe size={32} className="mx-auto text-gray-300 mb-3" />
           <p className="font-semibold text-gray-700">No websites yet</p>
@@ -156,9 +156,9 @@ export default function DashboardPage() {
                   <ExternalLink size={12} />
                   Visit site
                 </a>
-                {sites.length >= 1 ? (
+                {planName === "starter" && sites.length >= 1 ? (
                   <Link
-                    href="/signup"
+                    href="/pricing"
                     className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 hover:bg-indigo-50 py-2 rounded-lg transition-colors"
                   >
                     <Rocket size={12} />
